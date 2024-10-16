@@ -1,15 +1,16 @@
-import pygame, random, sys
+import pygame, random, sys #random crée des valeurs random, sys permet de terminer le système.
 from pygame.locals import *
 
-WINDOWWIDTH = 800
-WINDOWHEIGHT = 800
-TEXTCOLOR = (0, 0, 0)
+#when it's in upper letter it mean it's frome de pygame
+WINDOWWIDTH = 600 
+WINDOWHEIGHT = 600
+TEXTCOLOR = (0, 0, 0) #red, green, blue
 BACKGROUNDCOLOR = (255, 255, 255)
 FPS = 60
-BADDIEMINSIZE = 10
+BADDIEMINSIZE = 10 #baddie are the enemies
 BADDIEMAXSIZE = 40
 BADDIEMINSPEED = 1
-BADDIEMAXSPEED = 7
+BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
 
@@ -17,7 +18,7 @@ def terminate():
     pygame.quit()
     sys.exit()
 
-def waitForPlayerToPressKey():
+def waitForPlayerToPressKey(): #we name the function for what it done
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -27,36 +28,39 @@ def waitForPlayerToPressKey():
                     terminate()
                 return
 
+#playerRect is your side, baddies is the dictionnaries of obstacle
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
             return True
     return False
 
+#create the text for your games
 def drawText(text, font, surface, x, y):
     textobj = font.render(text, 1, TEXTCOLOR)
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
+#part were we setting our game
 # Set up pygame, the window, and the mouse cursor.
 pygame.init()
-mainClock = pygame.time.Clock()
-windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+mainClock = pygame.time.Clock() #clock inside your game
+windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT)) #you set the side of the window
 pygame.display.set_caption('Dodger')
-pygame.mouse.set_visible(False)
+pygame.mouse.set_visible(False) #if you want or not to show the mouse
 
 # Set up the fonts.
 font = pygame.font.SysFont(None, 48)
 
 # Set up sounds.
-gameOverSound = pygame.mixer.Sound('gameover.wav')
-pygame.mixer.music.load('background.mid')
+gameOverSound = pygame.mixer.Sound('gameover.wav') #music when you loose
+pygame.mixer.music.load('background.mid') #music in the game
 
 # Set up images.
-playerImage = pygame.image.load('player.png')
-playerRect = playerImage.get_rect()
-baddieImage = pygame.image.load('baddie.png')
+playerImage = pygame.image.load('player.png') #image of the player
+playerRect = playerImage.get_rect() #everyone are rectangle
+baddieImage = pygame.image.load('baddie.png') #image of the ennemies
 
 # Show the "Start" screen.
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -65,15 +69,16 @@ drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 3) - 30, (
 pygame.display.update()
 waitForPlayerToPressKey()
 
+#how the score is calculated
 topScore = 0
 while True:
     # Set up the start of the game.
     baddies = []
     score = 0
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
+    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50) #where the player start
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
-    baddieAddCounter = 0
+    baddieAddCounter = 0 #counter of the obstacle
     pygame.mixer.music.play(-1, 0.0)
 
     while True: # The game loop runs while the game part is playing.
@@ -84,7 +89,7 @@ while True:
                 terminate()
 
             if event.type == KEYDOWN:
-                if event.key == K_z:
+                if event.key == K_z: #how you write the key the player press
                     reverseCheat = True
                 if event.key == K_x:
                     slowCheat = True
@@ -124,7 +129,7 @@ while True:
                 # If the mouse moves, move the player where to the cursor.
                 playerRect.centerx = event.pos[0]
                 playerRect.centery = event.pos[1]
-        # Add new baddies at the top of the screen, if needed.
+        # Add new baddies at the top of the screen, if needed. how ennemies are created
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
@@ -138,6 +143,7 @@ while True:
             baddies.append(newBaddie)
 
         # Move the player around.
+        #have we the place to move more or are we in the wall
         if moveLeft and playerRect.left > 0:
             playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
         if moveRight and playerRect.right < WINDOWWIDTH:
@@ -152,9 +158,9 @@ while True:
             if not reverseCheat and not slowCheat:
                 b['rect'].move_ip(0, b['speed'])
             elif reverseCheat:
-                b['rect'].move_ip(0, -5)
+                b['rect'].move_ip(0, -5) #the baddies moove back
             elif slowCheat:
-                b['rect'].move_ip(0, 1)
+                b['rect'].move_ip(0, 1) #the baddies go slowly
 
         # Delete baddies that have fallen past the bottom.
         for b in baddies[:]:
@@ -175,7 +181,7 @@ while True:
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
-        pygame.display.update()
+        pygame.display.update() #when you add something new you need to refresh it
 
         # Check if any of the baddies have hit the player.
         if playerHasHitBaddie(playerRect, baddies):
