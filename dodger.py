@@ -14,6 +14,7 @@ BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
 
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -75,7 +76,8 @@ while True:
     # Set up the start of the game.
     baddies = []
     score = 0
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50) #where the player start
+    lives = 3  # Nombre de vies au début
+    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)#where the player start
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0 #counter of the obstacle
@@ -173,6 +175,7 @@ while True:
         # Draw the score and top score.
         drawText('Score: %s' % (score), font, windowSurface, 10, 0)
         drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
+        drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)  # Affiche les vies en dessous du score
 
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
@@ -183,11 +186,21 @@ while True:
 
         pygame.display.update() #when you add something new you need to refresh it
 
+    
         # Check if any of the baddies have hit the player.
         if playerHasHitBaddie(playerRect, baddies):
             if score > topScore:
-                topScore = score # set new top score
-            break
+                topScore = score  # set new top score
+
+            lives -= 1  # Réduit le nombre de vies de 1
+            if lives == 0:  # Si plus de vies, le jeu se termine
+                break
+            else:
+                # Réinitialiser la position du joueur
+                playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Retourne le joueur à sa position initiale
+                baddies = []  # Efface tous les baddies à l'écran
+                pygame.time.wait(1000)  # Pause d'une seconde avant de continuer
+
 
         mainClock.tick(FPS)
 
@@ -201,3 +214,4 @@ while True:
     waitForPlayerToPressKey()
 
     gameOverSound.stop()
+
