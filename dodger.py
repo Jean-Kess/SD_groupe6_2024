@@ -72,7 +72,6 @@ waitForPlayerToPressKey()
 
 #how the score is calculated
 topScore = 0
-FPS = FPS_initiale
 while True:
     # Set up the start of the game.
     baddies = []
