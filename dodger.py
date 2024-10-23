@@ -2,11 +2,11 @@ import pygame, random, sys #random crée des valeurs random, sys permet de termi
 from pygame.locals import *
 
 #when it's in upper letter it mean it's frome de pygame
-WINDOWWIDTH = 600 
-WINDOWHEIGHT = 600
+WINDOWWIDTH = 800
+WINDOWHEIGHT = 800
 TEXTCOLOR = (0, 0, 0) #red, green, blue
 BACKGROUNDCOLOR = (255, 255, 255)
-FPS = 60
+FPS_initiale = 30
 BADDIEMINSIZE = 10 #baddie are the enemies
 BADDIEMAXSIZE = 30
 BADDIEMINSPEED = 1
@@ -72,6 +72,7 @@ waitForPlayerToPressKey()
 
 #how the score is calculated
 topScore = 0
+FPS = FPS_initiale
 while True:
     # Set up the start of the game.
     baddies = []
@@ -85,6 +86,10 @@ while True:
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
+        if score == 500: #quand le joueur atteint 500 le jeu s'accelère 
+            FPS = FPS*2
+        if score == 1000:#quand le joueur atteint 1000 points le jeu accelère à nouveau
+            FPS = FPS*1.5
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -202,6 +207,7 @@ while True:
                 pygame.time.wait(1000)  # Pause d'une seconde avant de continuer
 
 
+
         mainClock.tick(FPS)
 
     # Stop the game and show the "Game Over" screen.
@@ -211,6 +217,7 @@ while True:
     drawText('GAME OVER', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
     drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 3) - 80, (WINDOWHEIGHT / 3) + 50)
     pygame.display.update()
+    FPS = FPS_initiale #on réinitialise la valeur initiale
     waitForPlayerToPressKey()
 
     gameOverSound.stop()
