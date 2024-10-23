@@ -6,13 +6,14 @@ WINDOWWIDTH = 800
 WINDOWHEIGHT = 800
 TEXTCOLOR = (0, 0, 0) #red, green, blue
 BACKGROUNDCOLOR = (255, 255, 255)
-FPS = 60
+FPS_initiale = 30
 BADDIEMINSIZE = 10 #baddie are the enemies
 BADDIEMAXSIZE = 30
 BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
+
 
 def terminate():
     pygame.quit()
@@ -71,6 +72,7 @@ waitForPlayerToPressKey()
 
 #how the score is calculated
 topScore = 0
+FPS = FPS_initiale
 while True:
     # Set up the start of the game.
     baddies = []
@@ -83,6 +85,10 @@ while True:
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
+        if score == 500: #quand le joueur atteint 500 le jeu s'accelère 
+            FPS = FPS*2
+        if score == 1000:#quand le joueur atteint 1000 points le jeu accelère à nouveau
+            FPS = FPS*1.5
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -173,6 +179,7 @@ while True:
         # Draw the score and top score.
         drawText('Score: %s' % (score), font, windowSurface, 10, 0)
         drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
+        drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)  # Affiche les vies en dessous du score
 
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
@@ -183,11 +190,22 @@ while True:
 
         pygame.display.update() #when you add something new you need to refresh it
 
+    
         # Check if any of the baddies have hit the player.
         if playerHasHitBaddie(playerRect, baddies):
             if score > topScore:
-                topScore = score # set new top score
-            break
+                topScore = score  # set new top score
+
+            lives -= 1  # Réduit le nombre de vies de 1
+            if lives == 0:  # Si plus de vies, le jeu se termine
+                break
+            else:
+                # Réinitialiser la position du joueur
+                playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Retourne le joueur à sa position initiale
+                baddies = []  # Efface tous les baddies à l'écran
+                pygame.time.wait(1000)  # Pause d'une seconde avant de continuer
+
+
 
         mainClock.tick(FPS)
 
@@ -198,6 +216,8 @@ while True:
     drawText('GAME OVER', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
     drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 3) - 80, (WINDOWHEIGHT / 3) + 50)
     pygame.display.update()
+    FPS = FPS_initiale #on réinitialise la valeur initiale
     waitForPlayerToPressKey()
 
     gameOverSound.stop()
+
