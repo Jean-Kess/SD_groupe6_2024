@@ -2,8 +2,8 @@ import pygame, random, sys #random crée des valeurs random, sys permet de termi
 from pygame.locals import *
 
 #when it's in upper letter it mean it's frome de pygame
-WINDOWWIDTH = 600 
-WINDOWHEIGHT = 600
+WINDOWWIDTH = 800 
+WINDOWHEIGHT = 800
 TEXTCOLOR = (0, 0, 0) #red, green, blue
 BACKGROUNDCOLOR = (255, 255, 255)
 FPS = 60
@@ -75,7 +75,7 @@ while True:
     # Set up the start of the game.
     baddies = []
     score = 0
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50) #where the player start
+    playerRect.topleft = (20, WINDOWHEIGHT/2) #where the player start
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0 #counter of the obstacle
@@ -127,7 +127,7 @@ while True:
 
             if event.type == MOUSEMOTION:
                 # If the mouse moves, move the player where to the cursor.
-                playerRect.centerx = event.pos[0]
+                #playerRect.centerx = event.pos[0]  #onveut bloquer les déplacements horizontaux
                 playerRect.centery = event.pos[1]
         # Add new baddies at the top of the screen, if needed. how ennemies are created
         if not reverseCheat and not slowCheat:
@@ -135,8 +135,8 @@ while True:
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - baddieSize), 0 - baddieSize, baddieSize, baddieSize),
-                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH - baddieSize, random.randint(0,WINDOWWIDTH - baddieSize),baddieSize, baddieSize),
+                        'speed': -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                         'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
                         }
 
@@ -144,10 +144,10 @@ while True:
 
         # Move the player around.
         #have we the place to move more or are we in the wall
-        if moveLeft and playerRect.left > 0:
-            playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
-        if moveRight and playerRect.right < WINDOWWIDTH:
-            playerRect.move_ip(PLAYERMOVERATE, 0)
+       # if moveLeft and playerRect.left > 0:
+          #  playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+        #if moveRight and playerRect.right < WINDOWWIDTH:
+           # playerRect.move_ip(PLAYERMOVERATE, 0)
         if moveUp and playerRect.top > 0:
             playerRect.move_ip(0, -1 * PLAYERMOVERATE)
         if moveDown and playerRect.bottom < WINDOWHEIGHT:
@@ -156,9 +156,9 @@ while True:
         # Move the baddies down.
         for b in baddies:
             if not reverseCheat and not slowCheat:
-                b['rect'].move_ip(0, b['speed'])
+                 b['rect'].move_ip(b['speed'],0) #pour que les méchants viennent de la droite
             elif reverseCheat:
-                b['rect'].move_ip(0, -5) #the baddies moove back
+                b['rect'].move_ip(-5) #the baddies moove back
             elif slowCheat:
                 b['rect'].move_ip(0, 1) #the baddies go slowly
 
