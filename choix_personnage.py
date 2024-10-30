@@ -1,5 +1,15 @@
 import pygame
 
+def drawText(text, font, surface, x, y, center=False):
+    textobj = font.render(text, True, (0, 0, 0))  # Utilisation de noir pour le texte
+    textrect = textobj.get_rect()
+    if center:
+        textrect.center = (x, y)
+    else:
+        textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+
+
 def choisir_personnage(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT):
     selected_character = 0
     player_name = ""
