@@ -1,5 +1,5 @@
 import pygame
-from choix_personnage import choisir_personnage, afficher_compte_a_rebours # Import des fonctions de menu.py
+from choix_personnage import choisir_personnage, afficher_compte_a_rebours # Import des fonctions de choix_personnage.py
 import random
 import sys
 from pygame.locals import *
@@ -12,6 +12,8 @@ WINDOWWIDTH = 800
 WINDOWHEIGHT = 800
 TEXTCOLOR = (0, 0, 0)  # black
 BACKGROUNDCOLOR = (255, 255, 255)  # white
+WHITE = (255, 255, 255)  
+BLACK = (0, 0, 0)  
 FPS_initiale = 30
 SPACEMINSIZE = 200
 SPACEMAXSIZE = 300
@@ -21,8 +23,7 @@ BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
-WHITE = (255, 255, 255)  #TEST
-BLACK = (0, 0, 0)  #TEST
+
 
 def terminate():
     pygame.quit()
@@ -58,8 +59,9 @@ pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
 
 # Set up the fonts.
-font = pygame.font.SysFont(None, 48)
-large_font = pygame.font.SysFont(None, 48)  
+font = pygame.font.Font('Anton-Regular.ttf', 38)
+large_font = pygame.font.Font('Anton-Regular.ttf', 48) 
+game_over_font = pygame.font.Font('Anton-Regular.ttf', 64)
 
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.wav')
@@ -221,9 +223,7 @@ while True:
         # Check if any of the baddies have hit the player.
         collided_baddie = playerHasHitBaddie(playerRect, baddies)
         if collided_baddie:
-            if score > topScore:
-                topScore = score  # set new top score
-
+                
             # Decrease lives based on the type of baddie
             if collided_baddie['type'] == 'asteroid':
                 lives -= 1  # Asteroids remove 1 life
@@ -231,6 +231,15 @@ while True:
                 lives -= 2  # Spaceships remove 2 lives
             
             if lives <= 0:  # If no lives left, the game ends
+                if score > topScore:
+                    topScore = score  # Update top score
+
+                    # Afficher le message de félicitations
+                    congratulation_text = "Congratulations, you've beaten your record!"
+                    congratulation_x = (WINDOWWIDTH - font.size(congratulation_text)[0]) // 2
+                    drawText(congratulation_text, font, windowSurface, congratulation_x, 130)
+                    pygame.display.update()  # Met à jour l'affichage pour montrer le message
+                    pygame.time.wait(2000)  # Attendre 2 secondes avant de continuer
                 break
             else:
                 playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
@@ -244,8 +253,21 @@ while True:
     pygame.mixer.music.stop()
     gameOverSound.play()
 
-    drawText('GAME OVER', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
-    drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 3) - 80, (WINDOWHEIGHT / 3) + 50)
+    game_over_text = 'GAME OVER'
+    retry_text = 'Press a key to play again.'
+
+    # Calcul des positions pour centrer le texte
+    game_over_x = (WINDOWWIDTH - game_over_font.size(game_over_text)[0]) // 2
+    retry_x = (WINDOWWIDTH - font.size(retry_text)[0]) // 2
+
+    # Dessiner le texte "GAME OVER" centré
+    drawText(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
+
+    # Dessiner le texte "Press a key to play again." centré
+    drawText(retry_text, font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
+    
+    
+
     pygame.display.update()
     FPS = FPS_initiale #on réinitialise la valeur initiale
     waitForPlayerToPressKey()
