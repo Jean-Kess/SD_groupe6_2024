@@ -10,6 +10,8 @@ WINDOWHEIGHT = 800
 TEXTCOLOR = (0, 0, 0) #red, green, blue
 BACKGROUNDCOLOR = (255, 255, 255)
 FPS_initiale = 30
+SPACEMINSIZE = 200
+SPACEMAXSIZE = 300
 BADDIEMINSIZE = 10 #baddie are the enemies
 BADDIEMAXSIZE = 30
 BADDIEMINSPEED = 1
@@ -65,6 +67,7 @@ pygame.mixer.music.load('background.mid') #music in the game
 playerImage = pygame.image.load('player.png') #image of the player
 playerRect = playerImage.get_rect() #everyone are rectangle
 baddieImage = pygame.image.load('baddie.png') #image of the ennemies
+spaceshipImage = pygame.image.load('space.png') #image of the spaceship
 
 # Show the "Start" screen.
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -204,6 +207,19 @@ while True:
             newBaddie = {'rect': pygame.Rect(WINDOWWIDTH - baddieSize, random.randint(0,WINDOWWIDTH - baddieSize),baddieSize, baddieSize),
                         'speed': -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                         'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+                        }
+
+            baddies.append(newBaddie)
+            for x in range(1,40):
+
+                if score == 100 * x:  # Vérifie si le score a atteint un multiple de 200
+                    last_baddie_score = score  # Met à jour le score de référence pour éviter d'ajouter plusieurs fois
+                    baddieSize = random.randint(SPACEMINSIZE, SPACEMAXSIZE)
+            # Utilise l'image spaceshipImage pour les méchants ajoutés tous les 200 points
+                    newBaddie = {
+                        'rect': pygame.Rect(WINDOWWIDTH - baddieSize, random.randint(0, WINDOWWIDTH - baddieSize), baddieSize, baddieSize),
+                        'speed': -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                        'surface': pygame.transform.scale(spaceshipImage, (baddieSize, baddieSize)),
                         }
 
             baddies.append(newBaddie)
