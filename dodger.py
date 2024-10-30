@@ -1,6 +1,9 @@
 import pygame, random, sys #random crée des valeurs random, sys permet de terminer le système.
 from pygame.locals import *
 
+paused = False 
+#bonne version
+
 #when it's in upper letter it mean it's frome de pygame
 WINDOWWIDTH = 800 
 WINDOWHEIGHT = 800
@@ -72,10 +75,13 @@ waitForPlayerToPressKey()
 
 #how the score is calculated
 topScore = 0
+FPS = FPS_initiale
 while True:
     # Set up the start of the game.
     baddies = []
     score = 0
+    lives = 3  # Nombre de vies
+    
     playerRect.topleft = (20, WINDOWHEIGHT/2) #where the player start
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
@@ -83,57 +89,112 @@ while True:
     pygame.mixer.music.play(-1, 0.0)
 
     while True: # The game loop runs while the game part is playing.
-        score += 1 # Increase score.
-        if score == 500: #quand le joueur atteint 500 le jeu s'accelère 
-            FPS = FPS*2
-        if score == 1000:#quand le joueur atteint 1000 points le jeu accelère à nouveau
-            FPS = FPS*1.5
+        if not paused:
+            score += 1 # Increase score.
+            if score == 500: #quand le joueur atteint 500 le jeu s'accelère 
+                FPS = FPS*2
+            if score == 1000:#quand le joueur atteint 1000 points le jeu accelère à nouveau
+                FPS = FPS*1.5
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
 
+            # if event.type == KEYDOWN:
+            #    if event.key == K_z: #how you write the key the player press
+             #       reverseCheat = True
+              #  if event.key == K_x:
+               #     slowCheat = True
+                #if event.key == K_LEFT or event.key == K_a:
+                 #   moveRight = False
+                  #  moveLeft = True
+                #if event.key == K_RIGHT or event.key == K_d:
+                 #   moveLeft = False
+                  #  moveRight = True
+                #if event.key == K_UP or event.key == K_w:
+                 #   moveDown = False
+                  #  moveUp = True
+                #if event.key == K_DOWN or event.key == K_s:
+                #    moveUp = False
+                 #   moveDown = True
+
             if event.type == KEYDOWN:
-                if event.key == K_z: #how you write the key the player press
-                    reverseCheat = True
-                if event.key == K_x:
-                    slowCheat = True
-                if event.key == K_LEFT or event.key == K_a:
-                    moveRight = False
-                    moveLeft = True
-                if event.key == K_RIGHT or event.key == K_d:
-                    moveLeft = False
-                    moveRight = True
-                if event.key == K_UP or event.key == K_w:
-                    moveDown = False
-                    moveUp = True
-                if event.key == K_DOWN or event.key == K_s:
-                    moveUp = False
-                    moveDown = True
+                if event.key == K_ESCAPE:  # Pressing ESC quits.
+                    terminate()
+                if event.key == K_p:  # Pressing 'P' pauses/unpauses the game.
+                    paused = not paused
+                # Handle player movement keys when not paused
+                if not paused:
+                    if event.key == K_LEFT or event.key == K_a:
+                        moveRight = False
+                        moveLeft = True
+                    if event.key == K_RIGHT or event.key == K_d:
+                        moveLeft = False
+                        moveRight = True
+                    if event.key == K_UP or event.key == K_w:
+                        moveDown = False
+                        moveUp = True
+                    if event.key == K_DOWN or event.key == K_s:
+                        moveUp = False
+                        moveDown = True 
+
+            #if event.type == KEYUP:
+             #   if event.key == K_z:
+              #      reverseCheat = False
+               #     score = 0
+                #if event.key == K_x:
+                 #   slowCheat = False
+                  #  score = 0
+                #if event.key == K_ESCAPE:
+                #        terminate()
+
+                #if event.key == K_LEFT or event.key == K_a:
+                 #   moveLeft = False
+                #if event.key == K_RIGHT or event.key == K_d:
+                 #   moveRight = False
+                #if event.key == K_UP or event.key == K_w:
+                 #   moveUp = False
+                #if event.key == K_DOWN or event.key == K_s:
+                  #  moveDown = False
 
             if event.type == KEYUP:
-                if event.key == K_z:
-                    reverseCheat = False
-                    score = 0
-                if event.key == K_x:
-                    slowCheat = False
-                    score = 0
-                if event.key == K_ESCAPE:
-                        terminate()
+                if not paused: 
+                    if event.key == K_LEFT or event.key == K_a:
+                        moveLeft = False
+                    if event.key == K_RIGHT or event.key == K_d:
+                        moveRight = False
+                    if event.key == K_UP or event.key == K_w:
+                        moveUp = False
+                    if event.key == K_DOWN or event.key == K_s:
+                        moveDown = False
 
-                if event.key == K_LEFT or event.key == K_a:
-                    moveLeft = False
-                if event.key == K_RIGHT or event.key == K_d:
-                    moveRight = False
-                if event.key == K_UP or event.key == K_w:
-                    moveUp = False
-                if event.key == K_DOWN or event.key == K_s:
-                    moveDown = False
 
             if event.type == MOUSEMOTION:
                 # If the mouse moves, move the player where to the cursor.
                 #playerRect.centerx = event.pos[0]  #onveut bloquer les déplacements horizontaux
                 playerRect.centery = event.pos[1]
+            
+            if event.type == MOUSEBUTTONDOWN:
+                playerRect.centery = event.pos[0]
+                mouse_pos = event.pos
+                if 500 <= mouse_pos[0] <= 580 and 10 <= mouse_pos[1] <= 60:  # Adjust these for your button size
+                    paused = not paused
+
+            
+        if paused:  # Si le jeu est en pause
+            windowSurface.fill(BACKGROUNDCOLOR)  # Remplit l'écran avec la couleur de fond
+            drawText('Paused', font, windowSurface, WINDOWWIDTH // 3, WINDOWHEIGHT // 3)  # Affiche le texte "Paused"
+            pygame.display.update()  # Mets à jour l'écran
+            continue  # Passe directement au prochain tour de boucle sans exécuter la logique du jeu
+        if not paused:
+        # Code to move the player and baddies, add baddies, etc.
+            pass
+        
+        # Dessiner le bouton pause
+        pygame.draw.rect(windowSurface, (200, 200, 200), (500, 10, 80, 50))  # Bouton Pause/Resume
+        drawText('Pause' if not paused else 'Resume', font, windowSurface,510,20)
+
+
         # Add new baddies at the top of the screen, if needed. how ennemies are created
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
