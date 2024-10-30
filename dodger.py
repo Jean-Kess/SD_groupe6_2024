@@ -64,7 +64,7 @@ pygame.mixer.music.load('background.mid') #music in the game
 # Set up images.
 playerImage = pygame.image.load('player.png') #image of the player
 playerRect = playerImage.get_rect() #everyone are rectangle
-baddieImage = pygame.image.load('baddie.png') #image of the ennemies
+baddieImage = pygame.image.load('asteroid.png') #image of the ennemies
 
 # Show the "Start" screen.
 windowSurface.fill(BACKGROUNDCOLOR)
