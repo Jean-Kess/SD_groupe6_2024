@@ -1,5 +1,5 @@
 import pygame
-from choix_personnage import choisir_personnage, afficher_compte_a_rebours # Import des fonctions de choix_personnage.py
+from choosing_your_character import choose_character, display_the_countdown # Importing functions from choix_personnage.py
 import random
 import sys
 from pygame.locals import *
@@ -35,7 +35,7 @@ def waitForPlayerToPressKey():
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:  # Pressing ESC quits.
+                if event.key == K_ESCAPE:  # Pressing ESC quits
                     terminate()
                 return
 
@@ -58,12 +58,12 @@ windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
 
-# Set up the fonts.
+# Set up the fonts
 font = pygame.font.Font('Anton-Regular.ttf', 38)
 large_font = pygame.font.Font('Anton-Regular.ttf', 48) 
 game_over_font = pygame.font.Font('Anton-Regular.ttf', 64)
 
-# Set up sounds.
+# Set up sounds
 gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
@@ -72,7 +72,7 @@ baddieImage = pygame.image.load('asteroid_.png')
 spaceshipImage = pygame.image.load('space.png')
 
 
-# Charger les images pour les personnages               
+# Load images for characters               
 character_image1 = pygame.image.load('character1.png')
 character_image2 = pygame.image.load('character2.png')
 character_image3 = pygame.image.load('character3.png')
@@ -85,12 +85,12 @@ drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 3) - 30, (
 pygame.display.update()
 waitForPlayerToPressKey()
 
-#Utilisation des fonctions          
-character_image, player_name = choisir_personnage(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
+# Using the functions          
+character_image, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
 playerImage = character_image   
 playerImage = pygame.transform.scale(character_image, (50, 50))
 playerRect = playerImage.get_rect() 
-afficher_compte_a_rebours(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
+display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
 
 # Game loop
 topScore = 0
@@ -98,7 +98,7 @@ FPS = FPS_initiale
 while True:
     baddies = []
     score = 0
-    lives = 3  # Number of lives
+    lives = 3  # Number of lives at start
     
     playerRect.topleft = (20, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
@@ -106,7 +106,8 @@ while True:
     baddieAddCounter = 0
     pygame.mixer.music.play(-1, 0.0)
 
-    while True:  # Game loop
+    # Game loop
+    while True:  
         if not paused:
             score += 1
             if score == 500:
@@ -121,7 +122,7 @@ while True:
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:  # Pressing ESC quits.
                     terminate()
-                if event.key == K_p:  # Pressing 'P' pauses/unpauses the game.
+                if event.key == K_p:  # Pressing 'P' pauses/unpauses the game
                     paused = not paused
                 if not paused:
                     if event.key == K_LEFT or event.key == K_a:
@@ -162,7 +163,7 @@ while True:
             pygame.display.update()
             continue
 
-        # Add new baddies at the top of the screen, if needed.
+        # Add new baddies at the top of the screen, if needed
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
@@ -187,13 +188,13 @@ while True:
                     }
                     baddies.append(newBaddie)
 
-        # Move the player around.
+        # Move the player around
         if moveUp and playerRect.top > 0:
             playerRect.move_ip(0, -1 * PLAYERMOVERATE)
         if moveDown and playerRect.bottom < WINDOWHEIGHT:
             playerRect.move_ip(0, PLAYERMOVERATE)
 
-        # Move the baddies.
+        # Move the baddies
         for b in baddies:
             if not reverseCheat and not slowCheat:
                 b['rect'].move_ip(b['speed'], 0)
@@ -202,44 +203,44 @@ while True:
             elif slowCheat:
                 b['rect'].move_ip(0, 1)
 
-        # Delete baddies that have fallen past the bottom.
+        # Delete baddies that have fallen past the bottom
         for b in baddies[:]:
             if b['rect'].top > WINDOWHEIGHT:
                 baddies.remove(b)
 
-        # Draw the game world on the window.
+        # Draw the game world on the window
         windowSurface.fill(BACKGROUNDCOLOR)
         drawText('Score: %s' % (score), font, windowSurface, 10, 0)
         drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
         drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)  # Display lives below the score
         windowSurface.blit(playerImage, playerRect)
 
-        # Draw each baddie.
+        # Draw each baddie
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
         pygame.display.update()
 
-        # Check if any of the baddies have hit the player.
+        # Check if any of the baddies have hit the player
         collided_baddie = playerHasHitBaddie(playerRect, baddies)
         if collided_baddie:
                 
             # Decrease lives based on the type of baddie
             if collided_baddie['type'] == 'asteroid':
-                lives -= 1  # Asteroids remove 1 life
+                lives -= 1  # Hitting an asteroid removes 1 life
             elif collided_baddie['type'] == 'spaceship':
-                lives -= 2  # Spaceships remove 2 lives
+                lives -= 2  # Hitting a spaceship removes 2 livess
             
             if lives <= 0:  # If no lives left, the game ends
                 if score > topScore:
                     topScore = score  # Update top score
 
-                    # Afficher le message de félicitations
-                    congratulation_text = "Congratulations, you've beaten your record!"
+                    # Display the congratulatory message if we beat our score
+                    congratulation_text = f"Congratulations {player_name}, you've beaten your record!"
                     congratulation_x = (WINDOWWIDTH - font.size(congratulation_text)[0]) // 2
                     drawText(congratulation_text, font, windowSurface, congratulation_x, 130)
-                    pygame.display.update()  # Met à jour l'affichage pour montrer le message
-                    pygame.time.wait(2000)  # Attendre 2 secondes avant de continuer
+                    pygame.display.update()  # Updates the display to show the message
+                    pygame.time.wait(2000)  # Wait 2 seconds before continuing
                 break
             else:
                 playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
@@ -249,27 +250,28 @@ while True:
         mainClock.tick(FPS)
 
     
-    # Stop the game and show the "Game Over" screen.
+    # Stop the game and show the "Game Over" screen
     pygame.mixer.music.stop()
     gameOverSound.play()
 
     game_over_text = 'GAME OVER'
     retry_text = 'Press a key to play again.'
 
-    # Calcul des positions pour centrer le texte
+    # Calculating positions to centre text
     game_over_x = (WINDOWWIDTH - game_over_font.size(game_over_text)[0]) // 2
     retry_x = (WINDOWWIDTH - font.size(retry_text)[0]) // 2
 
-    # Dessiner le texte "GAME OVER" centré
+    #  Display the text ‘GAME OVER’ centred
     drawText(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
 
-    # Dessiner le texte "Press a key to play again." centré
+    # Display the text ‘GAME OVER’ centred
     drawText(retry_text, font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
     
     
 
     pygame.display.update()
-    FPS = FPS_initiale #on réinitialise la valeur initiale
+    FPS = FPS_initiale # reset the initial value
+
     waitForPlayerToPressKey()
 
     gameOverSound.stop()

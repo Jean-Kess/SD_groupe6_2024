@@ -1,7 +1,7 @@
 import pygame
 
 def drawText(text, font, surface, x, y, center=False):
-    textobj = font.render(text, True, (0, 0, 0))  # Utilisation de noir pour le texte
+    textobj = font.render(text, True, (0, 0, 0))  # Using black for text
     textrect = textobj.get_rect()
     if center:
         textrect.center = (x, y)
@@ -9,8 +9,8 @@ def drawText(text, font, surface, x, y, center=False):
         textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-
-def choisir_personnage(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT):
+# Define the function to choose your character
+def choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT):
     selected_character = 0
     player_name = ""
     entering_name = True
@@ -19,11 +19,11 @@ def choisir_personnage(windowSurface, font, large_font, character_images, WHITE,
 
     while not game_started:
         windowSurface.fill(WHITE)
-        drawText("Entrez votre nom:", font, windowSurface, WINDOWWIDTH // 2, 50, center=True)
+        drawText("What's your name?", font, windowSurface, WINDOWWIDTH // 2, 50, center=True)
         drawText(player_name, font, windowSurface, WINDOWWIDTH // 2, 100, center=True)
 
         if not entering_name:
-            drawText("Choisissez votre personnage", large_font, windowSurface, WINDOWWIDTH // 2, 200, center=True)
+            drawText("Choose your character", large_font, windowSurface, WINDOWWIDTH // 2, 200, center=True)
             for i, img in enumerate(character_images):
                 x = WINDOWWIDTH // (len(character_images) + 1) * (i + 1)
                 y = WINDOWHEIGHT // 2
@@ -31,7 +31,7 @@ def choisir_personnage(windowSurface, font, large_font, character_images, WHITE,
                 if i == selected_character:
                     pygame.draw.rect(windowSurface, BLACK, (x - img.get_width() // 2, y - img.get_height() // 2, img.get_width(), img.get_height()), 3)
 
-            drawText("Appuyez sur Entrée pour confirmer", font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
+            drawText("Press Enter to confirm and play", font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -56,13 +56,13 @@ def choisir_personnage(windowSurface, font, large_font, character_images, WHITE,
 
     return character_images[selected_character], player_name
 
-
-def afficher_compte_a_rebours(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT):
+# Define the function to display a countdown timer
+def display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT):
     for count in range(3, 0, -1):
         windowSurface.fill(WHITE)
-        drawText(f"{player_name}, prêt(e) ?", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 3, center=True)
+        drawText(f"{player_name}, Ready?", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 3, center=True)
         windowSurface.blit(character_image, (WINDOWWIDTH // 2 - character_image.get_width() // 2, WINDOWHEIGHT // 2 - character_image.get_height() // 2))
-        drawText(f"Début dans {count}", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
+        drawText(f"Start in {count}", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
         pygame.display.update()
         pygame.time.wait(1000)
 
