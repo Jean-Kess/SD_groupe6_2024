@@ -24,6 +24,11 @@ BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
 
+# Constants for the star and immortality
+STAR_APPEAR_FRAMES = FPS_initiale * 20
+STAR_EFFECT_FRAMES = FPS_initiale * 10
+STAR_SPEED_MULTIPLIER = 3
+STAR_SPEED = 5  # Speed of the star
 
 def terminate():
     pygame.quit()
@@ -35,14 +40,14 @@ def waitForPlayerToPressKey():
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:  # Pressing ESC quits
+                if event.key == K_ESCAPE:
                     terminate()
                 return
 
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
-            return b  # Return the baddie that hit the player
+            return b
     return None
 
 def drawText(text, font, surface, x, y):
@@ -50,6 +55,12 @@ def drawText(text, font, surface, x, y):
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
+
+def update_star(starRect):
+    """Updates the star's position, moving it horizontally."""
+    starRect.move_ip(-STAR_SPEED, 0)  # Move the star to the left
+    if starRect.right < 0:  # If the star goes off-screen
+        starRect.left = WINDOWWIDTH  # Reset its position to the right edge
 
 # Initialize Pygame
 pygame.init()
@@ -71,6 +82,9 @@ pygame.mixer.music.load('background.mid')
 baddieImage = pygame.image.load('asteroid_.png')
 spaceshipImage = pygame.image.load('space.png')
 
+# Load images for superpowers
+starImage = pygame.image.load('starImage.png')
+starImage = pygame.transform.scale(starImage, (30, 30))
 
 # Load images for characters               
 character_image1 = pygame.image.load('character1.png')
@@ -106,12 +120,20 @@ while True:
     baddieAddCounter = 0
     pygame.mixer.music.play(-1, 0.0)
 
+
+    # Star variables
+    star_counter = 0
+    starRect = None
+    star_active = False
+    star_effect_counter = 0
+
+
     # Game loop
     while True:  
         if not paused:
             score += 1
             if score == 500:
-                FPS *= 2
+                FPS *= 1.5
             if score == 1000:
                 FPS *= 1.5
 
@@ -187,6 +209,18 @@ while True:
                         'type': 'spaceship'  # Type of baddie
                     }
                     baddies.append(newBaddie)
+        # Star appearance logic
+        star_counter += 1
+        if star_counter >= STAR_APPEAR_FRAMES:
+            starRect = pygame.Rect(random.randint(0, WINDOWWIDTH - 30),
+                                   random.randint(0, WINDOWHEIGHT - 30), 30, 30)
+            star_counter = 0
+
+        # Apply star speed boost
+        if star_active:
+            PLAYERMOVERATE *= STAR_SPEED_MULTIPLIER
+        else:
+            PLAYERMOVERATE = 5  # Reset speed when star effect ends
 
         # Move the player around
         if moveUp and playerRect.top > 0:
@@ -208,6 +242,22 @@ while True:
             if b['rect'].top > WINDOWHEIGHT:
                 baddies.remove(b)
 
+        # Update star position
+        if starRect:
+            update_star(starRect)    
+
+        # Check for star collision
+        if starRect and playerRect.colliderect(starRect):
+            star_active = True
+            star_effect_counter = STAR_EFFECT_FRAMES
+            starRect = None
+
+        # Reduce star effect counter
+        if star_active:
+            star_effect_counter -= 1
+            if star_effect_counter <= 0:
+                star_active = False
+                
         # Draw the game world on the window
         windowSurface.fill(BACKGROUNDCOLOR)
         drawText('Score: %s' % (score), font, windowSurface, 10, 0)
@@ -218,34 +268,45 @@ while True:
         # Draw each baddie
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
+        if starRect:
+            windowSurface.blit(starImage, starRect)
+
+        pygame.display.update()
+
+        # Display immortality timer
+        if star_active:
+            immortality_seconds = star_effect_counter // FPS_initiale
+            drawText(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 120)
 
         pygame.display.update()
 
         # Check if any of the baddies have hit the player
-        collided_baddie = playerHasHitBaddie(playerRect, baddies)
-        if collided_baddie:
-                
-            # Decrease lives based on the type of baddie
-            if collided_baddie['type'] == 'asteroid':
-                lives -= 1  # Hitting an asteroid removes 1 life
-            elif collided_baddie['type'] == 'spaceship':
-                lives -= 2  # Hitting a spaceship removes 2 livess
+        if not star_active:
+            collided_baddie = playerHasHitBaddie(playerRect, baddies)
             
-            if lives <= 0:  # If no lives left, the game ends
-                if score > topScore:
-                    topScore = score  # Update top score
+            if collided_baddie:
+                
+                # Decrease lives based on the type of baddie
+                if collided_baddie['type'] == 'asteroid':
+                    lives -= 1  # Hitting an asteroid removes 1 life
+                elif collided_baddie['type'] == 'spaceship':
+                    lives -= 2  # Hitting a spaceship removes 2 livess
+            
+                if lives <= 0:  # If no lives left, the game ends
+                    if score > topScore:
+                        topScore = score  # Update top score
 
-                    # Display the congratulatory message if we beat our score
-                    congratulation_text = f"Congratulations {player_name}, you've beaten your record!"
-                    congratulation_x = (WINDOWWIDTH - font.size(congratulation_text)[0]) // 2
-                    drawText(congratulation_text, font, windowSurface, congratulation_x, 130)
-                    pygame.display.update()  # Updates the display to show the message
-                    pygame.time.wait(2000)  # Wait 2 seconds before continuing
-                break
-            else:
-                playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
-                baddies = []  # Clear all baddies on screen
-                pygame.time.wait(1000)  # Pause for a second before continuing
+                        # Display the congratulatory message if we beat our score
+                        congratulation_text = f"Congratulations {player_name}, you've beaten your record!"
+                        congratulation_x = (WINDOWWIDTH - font.size(congratulation_text)[0]) // 2
+                        drawText(congratulation_text, font, windowSurface, congratulation_x, 130)
+                        pygame.display.update()  # Updates the display to show the message
+                        pygame.time.wait(2000)  # Wait 2 seconds before continuing
+                    break
+                else:
+                    playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
+                    baddies = []  # Clear all baddies on screen
+                    pygame.time.wait(1000)  # Pause for a second before continuing
 
         mainClock.tick(FPS)
 
