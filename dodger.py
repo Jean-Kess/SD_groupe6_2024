@@ -25,10 +25,12 @@ ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
 
 # Constants for the star and immortality
-STAR_APPEAR_FRAMES = FPS_initiale * 20
+STAR_APPEAR_FRAMES = FPS_initiale * 10
 STAR_EFFECT_FRAMES = FPS_initiale * 10
 STAR_SPEED_MULTIPLIER = 3
 STAR_SPEED = 5  # Speed of the star
+
+
 
 def terminate():
     pygame.quit()
@@ -64,6 +66,7 @@ def update_star(starRect):
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()  # Initialize the mixer for sound
 mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Dodger')
@@ -75,8 +78,10 @@ large_font = pygame.font.Font('Anton-Regular.ttf', 48)
 game_over_font = pygame.font.Font('Anton-Regular.ttf', 64)
 
 # Set up sounds
-gameOverSound = pygame.mixer.Sound('gameover.wav')
-pygame.mixer.music.load('background.mid')
+gameOverSound = pygame.mixer.Sound('GameOver!.wav')
+pygame.mixer.music.load('Background.wav')
+immortality_music = pygame.mixer.Sound('Immortality.wav')
+baddie_hit_sound = pygame.mixer.Sound('Boom.wav')  # Sound for hitting a baddie
 
 # Load images of things to avoid
 baddieImage = pygame.image.load('asteroid_.png')
@@ -92,7 +97,7 @@ character_image2 = pygame.image.load('character2.png')
 character_image3 = pygame.image.load('character3.png')
 character_images = [character_image1, character_image2, character_image3]
 
-# Show the "Start" screen.
+# Show the "Start" screen
 windowSurface.fill(BACKGROUNDCOLOR)
 #drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))         #on peut remplacer Dodger par le nom de notre jeu
 drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3) + 50)
@@ -106,6 +111,17 @@ playerImage = pygame.transform.scale(character_image, (50, 50))
 playerRect = playerImage.get_rect() 
 display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
 
+# Indicate the speed of play according to the score
+def get_game_speed(score):
+    if score >= 500:
+        return FPS_initiale * 1.5
+    elif score >= 1000:
+        return FPS_initiale * 2
+    elif score >= 2500:
+        return FPS_initiale * 3
+    else:
+        return FPS_initiale
+    
 # Game loop
 topScore = 0
 FPS = FPS_initiale
@@ -128,15 +144,16 @@ while True:
     star_effect_counter = 0
 
 
+
     # Game loop
     while True:  
         if not paused:
             score += 1
-            if score == 500:
-                FPS *= 1.5
-            if score == 1000:
-                FPS *= 1.5
-
+            #if score == 500:
+              #  FPS *= 1.5
+           # if score == 1000:
+               # FPS *= 1.5
+    
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
@@ -218,9 +235,14 @@ while True:
 
         # Apply star speed boost
         if star_active:
-            PLAYERMOVERATE *= STAR_SPEED_MULTIPLIER
+            pygame.mixer.music.stop()
+            immortality_music.play()  # Play immortality music 
+            pygame.mixer.music.play()
+            FPS = get_game_speed(score) * STAR_SPEED_MULTIPLIER
+            #c'est ici qu'il faudra écrie le code pour changer la vitesse quand on a l'étoile je crois
         else:
-            PLAYERMOVERATE = 5  # Reset speed when star effect ends
+         # Réinitialisez la vitesse en fonction du score, mais sans l'effet de l'étoile
+            FPS = get_game_speed(score)
 
         # Move the player around
         if moveUp and playerRect.top > 0:
@@ -283,8 +305,11 @@ while True:
         # Check if any of the baddies have hit the player
         if not star_active:
             collided_baddie = playerHasHitBaddie(playerRect, baddies)
+            immortality_music.stop()  # Stop the immortality music when the effect ends
             
             if collided_baddie:
+                pygame.mixer.music.stop()
+                baddie_hit_sound.play()
                 
                 # Decrease lives based on the type of baddie
                 if collided_baddie['type'] == 'asteroid':
@@ -307,6 +332,8 @@ while True:
                     playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
                     baddies = []  # Clear all baddies on screen
                     pygame.time.wait(1000)  # Pause for a second before continuing
+                
+                pygame.mixer.music.play()
 
         mainClock.tick(FPS)
 
