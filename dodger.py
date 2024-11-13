@@ -1,8 +1,12 @@
+#need to pip install opencv-python
+
 import pygame
 from choosing_your_character import choose_character, display_the_countdown # Importing functions from choix_personnage.py
 import random
 import sys
 from pygame.locals import *
+import cv2
+
 
 paused = False 
 
@@ -10,7 +14,7 @@ paused = False
 # Constants
 WINDOWWIDTH = 800 
 WINDOWHEIGHT = 800
-TEXTCOLOR = (0, 0, 0)  # black
+TEXTCOLOR = (255, 255, 255)  # white
 BACKGROUNDCOLOR = (255, 255, 255)  # white
 WHITE = (255, 255, 255)  
 BLACK = (0, 0, 0)  
@@ -53,10 +57,16 @@ def playerHasHitBaddie(playerRect, baddies):
     return None
 
 def drawText(text, font, surface, x, y):
-    textobj = font.render(text, 1, TEXTCOLOR)
-    textrect = textobj.get_rect()
-    textrect.topleft = (x, y)
-    surface.blit(textobj, textrect)
+    textobj = font.render(text, 1, (0, 0, 0))  # Render the text in black
+    textrect = textobj.get_rect() # Get the rectangle for the rendered text
+    textrect.topleft = (x, y) # Set the position of the text
+    surface.blit(textobj, textrect) # Blit the text onto the surface
+
+def drawTextWhite(text, font, surface, x, y):
+    textobj = font.render(text, True, (255, 255, 255)) # Render the text in white
+    textrect = textobj.get_rect() # Get the rectangle for the rendered text
+    textrect.topleft = (x, y) # Set the position of the text
+    surface.blit(textobj, textrect) # Blit the text onto the surface
 
 def update_star(starRect):
     """Updates the star's position, moving it horizontally."""
@@ -78,9 +88,9 @@ large_font = pygame.font.Font('Anton-Regular.ttf', 48)
 game_over_font = pygame.font.Font('Anton-Regular.ttf', 64)
 
 # Set up sounds
-gameOverSound = pygame.mixer.Sound('GameOver!.wav')
-pygame.mixer.music.load('Background.wav')
-immortality_music = pygame.mixer.Sound('Immortality.wav')
+gameOverSound = pygame.mixer.Sound('GameOver!.wav') # Sound when you lose
+pygame.mixer.music.load('Background.wav') # Background sound
+immortality_music = pygame.mixer.Sound('Immortality.wav') # Sound when you have the immortality star power
 baddie_hit_sound = pygame.mixer.Sound('Boom.wav')  # Sound for hitting a baddie
 
 # Load images of things to avoid
@@ -96,6 +106,43 @@ character_image1 = pygame.image.load('character1.png')
 character_image2 = pygame.image.load('character2.png')
 character_image3 = pygame.image.load('character3.png')
 character_images = [character_image1, character_image2, character_image3]
+
+# Load background image
+backgroundImage = pygame.image.load('backgroundsky.png').convert()
+backgroundImage = pygame.transform.scale(backgroundImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
+
+# Load the explosion video
+explosion_video = cv2.VideoCapture('explosion2.mp4')
+playing_explosion = False  # Flag to indicate if the explosion is playing
+explosion_x = 0  # X coordinate for the explosion
+explosion_y = 0  # Y coordinate for the explosion
+
+def play_explosion(video, x, y):
+    """Plays one frame of the explosion video at the given coordinates.
+
+    Args:
+        video: The video capture object.
+        x: The x-coordinate of the top-left corner of the explosion.
+        y: The y-coordinate of the top-left corner of the explosion.
+    """
+    global playing_explosion, explosion_x, explosion_y
+    success, frame = video.read()
+    if success:
+        # Resize the frame to 50x50pixels
+        frame = cv2.resize(frame, (50, 50), interpolation=cv2.INTER_AREA)
+
+        # Convert the resized frame to a Pygame surface
+        frame_surface = pygame.surfarray.make_surface(frame)
+
+        # Center the explosion on the baddie
+        frame_rect = frame_surface.get_rect()
+        frame_rect.center = (x, y)
+
+        windowSurface.blit(frame_surface, frame_rect)
+    else:
+        playing_explosion = False
+        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
 
 # Show the "Start" screen
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -285,10 +332,10 @@ while True:
                 star_active = False
                 
         # Draw the game world on the window
-        windowSurface.fill(BACKGROUNDCOLOR)
-        drawText('Score: %s' % (score), font, windowSurface, 10, 0)
-        drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
-        drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)  # Display lives below the score
+        windowSurface.blit(backgroundImage, (0, 0))   #ici pour modifier l'arrière plan du jeu
+        drawTextWhite('Score: %s' % (score), font, windowSurface, 10, 0)
+        drawTextWhite('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
+        drawTextWhite('Lives: %s' % (lives), font, windowSurface, 10, 80)  # Display lives below the score
         windowSurface.blit(playerImage, playerRect)
 
         # Draw each baddie
@@ -297,12 +344,18 @@ while True:
         if starRect:
             windowSurface.blit(starImage, starRect)
 
-        pygame.display.update()
 
         # Display immortality timer
         if star_active:
             immortality_seconds = star_effect_counter // FPS_initiale
-            drawText(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 120)
+            drawTextWhite(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 120)
+
+        pygame.display.update()
+
+        # Play explosion video if it's active
+        if playing_explosion:
+            play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)  # Offset explosion position
+
 
         pygame.display.update()
 
@@ -314,6 +367,23 @@ while True:
             if collided_baddie:
                 pygame.mixer.music.stop()
                 baddie_hit_sound.play()
+
+                # Start playing the explosion
+                playing_explosion = True
+                explosion_x = collided_baddie['rect'].centerx  # Utiliser le centre du rectangle du baddie
+                explosion_y = collided_baddie['rect'].centery
+                
+                # Wait for the explosion to finish before continuing
+                while playing_explosion:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            terminate()
+
+                    # Play explosion video
+                    play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)
+                    pygame.display.update()
+                    mainClock.tick(FPS)
+
                 
                 # Decrease lives based on the type of baddie
                 if collided_baddie['type'] == 'asteroid':
@@ -328,7 +398,7 @@ while True:
                         # Display the congratulatory message if we beat our score
                         congratulation_text = f"Congratulations {player_name}, you've beaten your record!"
                         congratulation_x = (WINDOWWIDTH - font.size(congratulation_text)[0]) // 2
-                        drawText(congratulation_text, font, windowSurface, congratulation_x, 130)
+                        drawTextWhite(congratulation_text, font, windowSurface, congratulation_x, 130)
                         pygame.display.update()  # Updates the display to show the message
                         pygame.time.wait(2000)  # Wait 2 seconds before continuing
                     break
@@ -338,6 +408,15 @@ while True:
                     pygame.time.wait(1000)  # Pause for a second before continuing
                 
                 pygame.mixer.music.play()
+
+        # Play explosion video if it's active
+        if playing_explosion:
+            play_explosion(explosion_video, explosion_x, explosion_y)  # Adjust explosion position as needed
+
+        pygame.display.update()
+
+   
+
 
         mainClock.tick(FPS)
 
@@ -354,10 +433,10 @@ while True:
     retry_x = (WINDOWWIDTH - font.size(retry_text)[0]) // 2
 
     #  Display the text ‘GAME OVER’ centred
-    drawText(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
+    drawTextWhite(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
 
     # Display the text ‘GAME OVER’ centred
-    drawText(retry_text, font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
+    drawTextWhite(retry_text, font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
     
     
 
