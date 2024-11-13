@@ -199,6 +199,9 @@ while True:
         if paused:
             windowSurface.fill(BACKGROUNDCOLOR)
             drawText('Paused', font, windowSurface, WINDOWWIDTH // 3, WINDOWHEIGHT // 3)
+            pygame.mixer.music.stop() #quand on met pause la musique se coupe
+            immortality_music.stop()
+            pygame.mixer.music.play()
             pygame.display.update()
             continue
 
