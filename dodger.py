@@ -1,4 +1,4 @@
-#need to pip install opencv-python
+#firstly, in order to be able to see the explosion video, you need to :  pip install opencv-python
 
 import pygame
 from choosing_your_character import choose_character, display_the_countdown # Importing functions from choix_personnage.py
@@ -6,7 +6,6 @@ import random
 import sys
 from pygame.locals import *
 import cv2
-
 
 paused = False 
 
@@ -34,8 +33,7 @@ STAR_EFFECT_FRAMES = FPS_initiale * 10
 STAR_SPEED_MULTIPLIER = 3
 STAR_SPEED = 5  # Speed of the star
 
-
-
+#Definition of functions
 def terminate():
     pygame.quit()
     sys.exit()
@@ -69,7 +67,6 @@ def drawTextWhite(text, font, surface, x, y):
     surface.blit(textobj, textrect) # Blit the text onto the surface
 
 def update_star(starRect):
-    """Updates the star's position, moving it horizontally."""
     starRect.move_ip(-STAR_SPEED, 0)  # Move the star to the left
     if starRect.right < 0:  # If the star goes off-screen
         starRect.left = WINDOWWIDTH  # Reset its position to the right edge
@@ -111,26 +108,20 @@ character_images = [character_image1, character_image2, character_image3]
 backgroundImage = pygame.image.load('backgroundsky.png').convert()
 backgroundImage = pygame.transform.scale(backgroundImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
 
-# Load the explosion video
+# Explosion video
 explosion_video = cv2.VideoCapture('explosion2.mp4')
 playing_explosion = False  # Flag to indicate if the explosion is playing
 explosion_x = 0  # X coordinate for the explosion
 explosion_y = 0  # Y coordinate for the explosion
 
 def play_explosion(video, x, y):
-    """Plays one frame of the explosion video at the given coordinates.
-
-    Args:
-        video: The video capture object.
-        x: The x-coordinate of the top-left corner of the explosion.
-        y: The y-coordinate of the top-left corner of the explosion.
-    """
     global playing_explosion, explosion_x, explosion_y
     success, frame = video.read()
     if success:
-        # Resize the frame to 50x50pixels
-        frame = cv2.resize(frame, (50, 50), interpolation=cv2.INTER_AREA)
-
+        # Resize the frame to 75x75pixels
+        frame = cv2.resize(frame, (75, 75), interpolation=cv2.INTER_AREA)
+        # Convert the frame from BGR to RGB
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # Convert the resized frame to a Pygame surface
         frame_surface = pygame.surfarray.make_surface(frame)
 
@@ -190,23 +181,17 @@ while True:
     star_active = False
     star_effect_counter = 0
 
-
-
     # Game loop
     while True:  
         if not paused:
             score += 1
-            #if score == 500:
-              #  FPS *= 1.5
-           # if score == 1000:
-               # FPS *= 1.5
     
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
 
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:  # Pressing ESC quits.
+                if event.key == K_ESCAPE:  # Pressing ESC quits
                     terminate()
                 if event.key == K_p:  # Pressing 'P' pauses/unpauses the game
                     paused = not paused
@@ -246,7 +231,8 @@ while True:
         if paused:
             windowSurface.fill(BACKGROUNDCOLOR)
             drawText('Paused', font, windowSurface, WINDOWWIDTH // 3, WINDOWHEIGHT // 3)
-            pygame.mixer.music.stop() #quand on met pause la musique se coupe
+            pygame.mixer.music.stop() # when paused, the music stops
+
             immortality_music.stop()
             pygame.mixer.music.play()
             pygame.display.update()
@@ -276,6 +262,7 @@ while True:
                         'type': 'spaceship'  # Type of baddie
                     }
                     baddies.append(newBaddie)
+                    
         # Star appearance logic
         star_counter += 1
         if star_counter >= STAR_APPEAR_FRAMES:
@@ -289,9 +276,8 @@ while True:
             immortality_music.play()  # Play immortality music 
             pygame.mixer.music.play()
             FPS = get_game_speed(score) * STAR_SPEED_MULTIPLIER
-            #c'est ici qu'il faudra écrie le code pour changer la vitesse quand on a l'étoile je crois
+            
         else:
-         # Réinitialisez la vitesse en fonction du score, mais sans l'effet de l'étoile
             FPS = get_game_speed(score)
 
         # Move the player around
@@ -331,7 +317,7 @@ while True:
                 star_active = False
                 
         # Draw the game world on the window
-        windowSurface.blit(backgroundImage, (0, 0))   #ici pour modifier l'arrière plan du jeu
+        windowSurface.blit(backgroundImage, (0, 0))  
         drawTextWhite('Score: %s' % (score), font, windowSurface, 10, 0)
         drawTextWhite('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
         drawTextWhite('Lives: %s' % (lives), font, windowSurface, 10, 80)  # Display lives below the score
@@ -369,7 +355,7 @@ while True:
 
                 # Start playing the explosion
                 playing_explosion = True
-                explosion_x = collided_baddie['rect'].centerx  # Utiliser le centre du rectangle du baddie
+                explosion_x = collided_baddie['rect'].centerx  
                 explosion_y = collided_baddie['rect'].centery
                 
                 # Wait for the explosion to finish before continuing
@@ -384,7 +370,7 @@ while True:
                     mainClock.tick(FPS)
 
                 
-                # Decrease lives based on the type of baddie
+                # Decrease lives based on the type of baddie that you hit
                 if collided_baddie['type'] == 'asteroid':
                     lives -= 1  # Hitting an asteroid removes 1 life
                 elif collided_baddie['type'] == 'spaceship':
@@ -414,8 +400,6 @@ while True:
 
         pygame.display.update()
 
-   
-
 
         mainClock.tick(FPS)
 
@@ -433,8 +417,6 @@ while True:
 
     #  Display the text ‘GAME OVER’ centred
     drawTextWhite(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
-
-    # Display the text ‘GAME OVER’ centred
     drawTextWhite(retry_text, font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
     
     
