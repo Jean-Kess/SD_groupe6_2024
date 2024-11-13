@@ -1,4 +1,4 @@
-#firstly, in order to be able to see the explosion video, you need to :  pip install opencv-python
+#firstly, in order to be able to see the explosion video, you need to write this in your terminal :  pip install opencv-python
 
 import pygame
 from choosing_your_character import choose_character, display_the_countdown # Importing functions from choix_personnage.py
@@ -342,7 +342,6 @@ while True:
         if playing_explosion:
             play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)  # Offset explosion position
 
-
         pygame.display.update()
 
         # Check if any of the baddies have hit the player
@@ -354,30 +353,43 @@ while True:
                 pygame.mixer.music.stop()
                 baddie_hit_sound.play()
 
-                # Start playing the explosion
+                # Decrease lives
+                if collided_baddie['type'] == 'asteroid':
+                    lives -= 1
+                elif collided_baddie['type'] == 'spaceship':
+                    lives -= 2
+
+                # Start playing the explosion (either small or fullscreen)
                 playing_explosion = True
-                explosion_x = collided_baddie['rect'].centerx  
-                explosion_y = collided_baddie['rect'].centery
-                
-                # Wait for the explosion to finish before continuing
+                if lives <= 0:  # Fullscreen explosion on game over
+                    explosion_x = WINDOWWIDTH // 2
+                    explosion_y = WINDOWHEIGHT // 2
+                    explosion_size = (WINDOWWIDTH, WINDOWHEIGHT)  # Fullscreen size
+                else:  # Small explosion otherwise
+                    explosion_x = collided_baddie['rect'].centerx + 20
+                    explosion_y = collided_baddie['rect'].centery + 20
+                    explosion_size = (75, 75)  # Small explosion size
+
                 while playing_explosion:
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             terminate()
 
-                    # Play explosion video
-                    play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)
+                    success, frame = explosion_video.read()
+                    if success:
+                        frame = cv2.resize(frame, explosion_size, interpolation=cv2.INTER_AREA)
+                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        frame_surface = pygame.surfarray.make_surface(frame)
+                        windowSurface.blit(frame_surface, (explosion_x - explosion_size[0] // 2, explosion_y - explosion_size[1] // 2))  # Center the explosion
+                    else:
+                        playing_explosion = False
+                        explosion_video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
                     pygame.display.update()
                     mainClock.tick(FPS)
-
-                
-                # Decrease lives based on the type of baddie that you hit
-                if collided_baddie['type'] == 'asteroid':
-                    lives -= 1  # Hitting an asteroid removes 1 life
-                elif collided_baddie['type'] == 'spaceship':
-                    lives -= 2  # Hitting a spaceship removes 2 livess
             
-                if lives <= 0:  # If no lives left, the game ends
+                if lives <= 0:  # If no lives left, the game ends                 
+                    
                     if score > topScore:
                         topScore = score  # Update top score
 
@@ -394,13 +406,6 @@ while True:
                     pygame.time.wait(1000)  # Pause for a second before continuing
                 
                 pygame.mixer.music.play()
-
-        # Play explosion video if it's active
-        if playing_explosion:
-            play_explosion(explosion_video, explosion_x, explosion_y)  # Adjust explosion position as needed
-
-        pygame.display.update()
-
 
         mainClock.tick(FPS)
 
