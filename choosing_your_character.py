@@ -60,7 +60,7 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
 def display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT):
     for count in range(3, 0, -1):
         windowSurface.fill(WHITE)
-        drawText(f"{player_name}, Ready?", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 3, center=True)
+        drawText(f"{player_name} are you ready?", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 3, center=True)
         windowSurface.blit(character_image, (WINDOWWIDTH // 2 - character_image.get_width() // 2, WINDOWHEIGHT // 2 - character_image.get_height() // 2))
         drawText(f"Start in {count}", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
         pygame.display.update()
