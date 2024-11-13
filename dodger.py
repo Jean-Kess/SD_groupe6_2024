@@ -80,6 +80,7 @@ pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
 
 # Set up the fonts
+small_font = pygame.font.Font('Anton-Regular.ttf', 30)
 font = pygame.font.Font('Anton-Regular.ttf', 38)
 large_font = pygame.font.Font('Anton-Regular.ttf', 48) 
 game_over_font = pygame.font.Font('Anton-Regular.ttf', 64)
@@ -390,15 +391,7 @@ while True:
             
                 if lives <= 0:  # If no lives left, the game ends                 
                     
-                    if score > topScore:
-                        topScore = score  # Update top score
-
-                        # Display the congratulatory message if we beat our score
-                        congratulation_text = f"Congratulations {player_name}, you've beaten your record!"
-                        congratulation_x = (WINDOWWIDTH - font.size(congratulation_text)[0]) // 2
-                        drawTextWhite(congratulation_text, font, windowSurface, congratulation_x, 130)
-                        pygame.display.update()  # Updates the display to show the message
-                        pygame.time.wait(2000)  # Wait 2 seconds before continuing
+                    
                     break
                 else:
                     playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
@@ -413,7 +406,7 @@ while True:
     # Stop the game and show the "Game Over" screen
     pygame.mixer.music.stop()
     gameOverSound.play()
-
+    
     game_over_text = 'GAME OVER'
     retry_text = 'Press a key to play again.'
 
@@ -424,9 +417,18 @@ while True:
     #  Display the text ‘GAME OVER’ centred
     drawTextWhite(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
     drawTextWhite(retry_text, font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
+    pygame.display.update()  # Updates the display to show the message
+    pygame.time.wait(2000)  # Wait 2 seconds before continuing
     
-    
-
+    # Display the congratulatory message if we beat our score
+    if score > topScore:
+        topScore = score  # Update top score
+        congratulation_text1 = f"Congratulations {player_name},"
+        congratulation_text2 = f"You've beaten your record! Now your top score is {topScore}"
+        congratulation_x1 = (WINDOWWIDTH - small_font.size(congratulation_text1)[0]) / 2
+        congratulation_x2 = (WINDOWWIDTH - small_font.size(congratulation_text2)[0]) / 2
+        drawTextWhite(congratulation_text1, small_font, windowSurface, congratulation_x1, (WINDOWHEIGHT / 3) + 250)
+        drawTextWhite(congratulation_text2, small_font, windowSurface, congratulation_x2, (WINDOWHEIGHT / 3) + 300)  # Adjust vertical position for the second line
     pygame.display.update()
     FPS = FPS_initiale # reset the initial value
 
