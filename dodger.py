@@ -110,6 +110,7 @@ playerImage = character_image
 playerImage = pygame.transform.scale(character_image, (50, 50))
 playerRect = playerImage.get_rect() 
 display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
+pygame.mouse.set_visible(False)
 
 # Indicate the speed of play according to the score
 def get_game_speed(score):
