@@ -1,8 +1,12 @@
+#need to pip install opencv-python
+
 import pygame
 from choosing_your_character import choose_character, display_the_countdown # Importing functions from choix_personnage.py
 import random
 import sys
 from pygame.locals import *
+import cv2
+
 
 paused = False 
 
@@ -106,6 +110,38 @@ character_images = [character_image1, character_image2, character_image3]
 # Load background image
 backgroundImage = pygame.image.load('backgroundsky.png').convert()
 backgroundImage = pygame.transform.scale(backgroundImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
+
+# Load the explosion video
+explosion_video = cv2.VideoCapture('explosion2.mp4')
+playing_explosion = False  # Flag to indicate if the explosion is playing
+explosion_x = 0  # X coordinate for the explosion
+explosion_y = 0  # Y coordinate for the explosion
+
+def play_explosion(video, x, y):
+    """Plays one frame of the explosion video at the given coordinates.
+
+    Args:
+        video: The video capture object.
+        x: The x-coordinate of the top-left corner of the explosion.
+        y: The y-coordinate of the top-left corner of the explosion.
+    """
+    global playing_explosion, explosion_x, explosion_y
+    success, frame = video.read()
+    if success:
+        # Resize the frame to 50x50pixels
+        frame = cv2.resize(frame, (50, 50), interpolation=cv2.INTER_AREA)
+
+        # Convert the resized frame to a Pygame surface
+        frame_surface = pygame.surfarray.make_surface(frame)
+
+        # Center the explosion on the baddie
+        frame_rect = frame_surface.get_rect()
+        frame_rect.center = (x, y)
+
+        windowSurface.blit(frame_surface, frame_rect)
+    else:
+        playing_explosion = False
+        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
 
 # Show the "Start" screen
@@ -307,12 +343,18 @@ while True:
         if starRect:
             windowSurface.blit(starImage, starRect)
 
-        pygame.display.update()
 
         # Display immortality timer
         if star_active:
             immortality_seconds = star_effect_counter // FPS_initiale
             drawTextWhite(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 120)
+
+        pygame.display.update()
+
+        # Play explosion video if it's active
+        if playing_explosion:
+            play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)  # Offset explosion position
+
 
         pygame.display.update()
 
@@ -324,6 +366,23 @@ while True:
             if collided_baddie:
                 pygame.mixer.music.stop()
                 baddie_hit_sound.play()
+
+                # Start playing the explosion
+                playing_explosion = True
+                explosion_x = collided_baddie['rect'].centerx  # Utiliser le centre du rectangle du baddie
+                explosion_y = collided_baddie['rect'].centery
+                
+                # Wait for the explosion to finish before continuing
+                while playing_explosion:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            terminate()
+
+                    # Play explosion video
+                    play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)
+                    pygame.display.update()
+                    mainClock.tick(FPS)
+
                 
                 # Decrease lives based on the type of baddie
                 if collided_baddie['type'] == 'asteroid':
@@ -348,6 +407,15 @@ while True:
                     pygame.time.wait(1000)  # Pause for a second before continuing
                 
                 pygame.mixer.music.play()
+
+        # Play explosion video if it's active
+        if playing_explosion:
+            play_explosion(explosion_video, explosion_x, explosion_y)  # Adjust explosion position as needed
+
+        pygame.display.update()
+
+   
+
 
         mainClock.tick(FPS)
 
