@@ -105,6 +105,10 @@ character_image2 = pygame.image.load('character2.png')
 character_image3 = pygame.image.load('character3.png')
 character_images = [character_image1, character_image2, character_image3]
 
+#Load image of heart
+heartImage = pygame.image.load('heartImage.png')  # Load the heart image
+heartImage = pygame.transform.scale(heartImage, (22, 22))  # Adjust size if needed
+
 # Load background image
 backgroundImage = pygame.image.load('backgroundsky.png').convert()
 backgroundImage = pygame.transform.scale(backgroundImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
@@ -135,6 +139,18 @@ def play_explosion(video, x, y):
         playing_explosion = False
         video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
+#draws hearts on the screen based on remaining lives
+def draw_hearts(lives, font, surface, x, y):
+    text = "Lives: "
+    textobj = font.render(text, True, (255, 255, 255))
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+
+    heart_spacing = 30  # Adjust spacing between hearts
+    heart_y_offset = 18  # Adjust this value to fine-tune vertical alignment
+    for i in range(lives):
+        windowSurface.blit(heartImage, (x + textrect.width + (i * heart_spacing), y + heart_y_offset)) # Position hearts relative to text
 
 # Show the "Start" screen
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -322,7 +338,7 @@ while True:
         windowSurface.blit(backgroundImage, (0, 0))  
         drawTextWhite('Score: %s' % (score), font, windowSurface, 10, 0)
         drawTextWhite('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
-        drawTextWhite('Lives: %s' % (lives), font, windowSurface, 10, 80)  # Display lives below the score
+        draw_hearts(lives, font, windowSurface, 10, 80)  #  Pass necessary arguments
         windowSurface.blit(playerImage, playerRect)
 
         # Draw each baddie
