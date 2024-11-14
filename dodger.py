@@ -48,9 +48,12 @@ def waitForPlayerToPressKey():
                     terminate()
                 return
 
-def playerHasHitBaddie(playerRect, baddies):
+def playerHasHitBaddie(playerRect, playerImage, baddies):  # Add playerImage argument
+    playerMask = pygame.mask.from_surface(playerImage)  # Create player mask
     for b in baddies:
-        if playerRect.colliderect(b['rect']):
+        baddieMask = pygame.mask.from_surface(b['surface'])  # Create baddie mask
+        offset = (b['rect'].x - playerRect.x, b['rect'].y - playerRect.y)
+        if playerMask.overlap(baddieMask, offset):  # Check for mask overlap
             return b
     return None
 
@@ -80,10 +83,11 @@ pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
 
 # Set up the fonts
-small_font = pygame.font.Font('Anton-Regular.ttf', 30)
+small_font = pygame.font.Font('gameFont.ttf', 28)
 font = pygame.font.Font('Anton-Regular.ttf', 38)
 large_font = pygame.font.Font('Anton-Regular.ttf', 48) 
-game_over_font = pygame.font.Font('Anton-Regular.ttf', 64)
+game_over_font = pygame.font.Font('gameFont.ttf', 64)
+retry_font = pygame.font.Font('gameFont.ttf', 35)
 
 # Set up sounds
 gameOverSound = pygame.mixer.Sound('GameOver!.wav') # Sound when you lose
@@ -123,12 +127,9 @@ def play_explosion(video, x, y):
     global playing_explosion, explosion_x, explosion_y
     success, frame = video.read()
     if success:
-        # Resize the frame to 75x75pixels
-        frame = cv2.resize(frame, (75, 75), interpolation=cv2.INTER_AREA)
-        # Convert the frame from BGR to RGB
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # Convert the resized frame to a Pygame surface
-        frame_surface = pygame.surfarray.make_surface(frame)
+        frame = cv2.resize(frame, (75, 75), interpolation=cv2.INTER_AREA) # Resize the frame to 75x75pixels
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Convert the frame from BGR to RGB
+        frame_surface = pygame.surfarray.make_surface(frame) # Convert the resized frame to a Pygame surface
 
         # Center the explosion on the baddie
         frame_rect = frame_surface.get_rect()
@@ -154,8 +155,7 @@ def draw_hearts(lives, font, surface, x, y):
 
 # Show the "Start" screen
 windowSurface.fill(BACKGROUNDCOLOR)
-#drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))         #on peut remplacer Dodger par le nom de notre jeu
-drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3) + 50)
+drawText('Press a key to start', pygame.font.Font('gameFont.ttf', 40), windowSurface, (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 40).size('Press a key to start.')[0]) // 2, (WINDOWHEIGHT / 3) + 50)
 pygame.display.update()
 waitForPlayerToPressKey()
 
@@ -363,12 +363,12 @@ while True:
 
         # Check if any of the baddies have hit the player
         if not star_active:
-            collided_baddie = playerHasHitBaddie(playerRect, baddies)
+            collided_baddie = playerHasHitBaddie(playerRect, playerImage, baddies)  
             immortality_music.stop()  # Stop the immortality music when the effect ends
             
             if collided_baddie:
-                pygame.mixer.music.stop()
-                baddie_hit_sound.play()
+                pygame.mixer.music.stop() # Stop the game music
+                baddie_hit_sound.play()   # Play the explosion sound
 
                 # Decrease lives
                 if collided_baddie['type'] == 'asteroid':
@@ -407,7 +407,6 @@ while True:
             
                 if lives <= 0:  # If no lives left, the game ends                 
                     
-                    
                     break
                 else:
                     playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
@@ -424,27 +423,26 @@ while True:
     gameOverSound.play()
     
     game_over_text = 'GAME OVER'
-    retry_text = 'Press a key to play again.'
+    retry_text = 'Press a key to play again'
 
     # Calculating positions to centre text
     game_over_x = (WINDOWWIDTH - game_over_font.size(game_over_text)[0]) // 2
-    retry_x = (WINDOWWIDTH - font.size(retry_text)[0]) // 2
+    retry_x = (WINDOWWIDTH - retry_font.size(retry_text)[0]) // 2  
 
     #  Display the text ‘GAME OVER’ centred
     drawTextWhite(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
-    drawTextWhite(retry_text, font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
+    drawTextWhite(retry_text, retry_font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
     pygame.display.update()  # Updates the display to show the message
     pygame.time.wait(2000)  # Wait 2 seconds before continuing
     
     # Display the congratulatory message if we beat our score
     if score > topScore:
         topScore = score  # Update top score
-        congratulation_text1 = f"Congratulations {player_name},"
-        congratulation_text2 = f"You've beaten your record! Now your top score is {topScore}"
-        congratulation_x1 = (WINDOWWIDTH - small_font.size(congratulation_text1)[0]) / 2
-        congratulation_x2 = (WINDOWWIDTH - small_font.size(congratulation_text2)[0]) / 2
-        drawTextWhite(congratulation_text1, small_font, windowSurface, congratulation_x1, (WINDOWHEIGHT / 3) + 250)
-        drawTextWhite(congratulation_text2, small_font, windowSurface, congratulation_x2, (WINDOWHEIGHT / 3) + 300)  # Adjust vertical position for the second line
+        congrats_y = (WINDOWHEIGHT / 3) + 250
+        for text in [f"Congratulations {player_name},", "You've beaten your record!", f"Now your top score is {topScore}"]:
+            drawText(text, small_font, windowSurface, (WINDOWWIDTH - small_font.size(text)[0]) / 2, congrats_y)
+            congrats_y += 50  # Increment y-position for next line
+    
     pygame.display.update()
     FPS = FPS_initiale # reset the initial value
 

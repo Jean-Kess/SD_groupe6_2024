@@ -20,11 +20,11 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
 
     while not game_started:
         windowSurface.fill(WHITE)
-        drawText("What's your name?", font, windowSurface, WINDOWWIDTH // 2, 50, center=True)
-        drawText(player_name, font, windowSurface, WINDOWWIDTH // 2, 100, center=True)
+        drawText("What's your name?", pygame.font.Font('gameFont.ttf', 55), windowSurface, WINDOWWIDTH // 2, 50, center=True)
+        drawText(player_name, font, windowSurface, WINDOWWIDTH // 2, 130, center=True)
 
         if not entering_name:
-            drawText("Choose your character", large_font, windowSurface, WINDOWWIDTH // 2, 200, center=True)
+            drawText("Choose your character", pygame.font.Font('gameFont.ttf', 45), windowSurface, WINDOWWIDTH // 2, 200, center=True)
             character_rects = []
             for i, img in enumerate(character_images):
                 x = WINDOWWIDTH // (len(character_images) + 1) * (i + 1)
@@ -36,7 +36,7 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
                 if i == selected_character:
                     pygame.draw.rect(windowSurface, BLACK, img_rect, 3)
 
-            drawText("Press Enter to confirm and play", font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
+            drawText("Press Enter to play", pygame.font.Font('gameFont.ttf', 40), windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -79,13 +79,13 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
 def display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT):
     for count in range(3, 0, -1):
         windowSurface.fill(WHITE)
-        drawText(f"{player_name} are you ready?", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 3, center=True)
+        drawText(f"{player_name} are you ready?", pygame.font.Font('gameFont.ttf', 35), windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 3, center=True)
         windowSurface.blit(character_image, (WINDOWWIDTH // 2 - character_image.get_width() // 2, WINDOWHEIGHT // 2 - character_image.get_height() // 2))
-        drawText(f"Start in {count}", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
+        drawText(f"Start in {count}", pygame.font.Font('gameFont.ttf', 40), windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT - 100, center=True)
         pygame.display.update()
         pygame.time.wait(1000)
 
     windowSurface.fill(WHITE)
-    drawText("GO !", large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 2, center=True)
+    drawText("GO!", pygame.font.Font('gameFont.ttf', 85), windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 2, center=True)
     pygame.display.update()
     pygame.time.wait(1000)
