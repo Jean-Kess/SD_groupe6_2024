@@ -150,6 +150,8 @@ heartImage = pygame.transform.scale(heartImage, (22, 22))  # Adjust size if need
 # Load background image
 backgroundImage = pygame.image.load('backgroundsky.png').convert()
 backgroundImage = pygame.transform.scale(backgroundImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
+pausedImage = pygame.image.load('pausedImage.png').convert()
+pausedImage = pygame.transform.scale(pausedImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
 
 # Explosion video
 explosion_video = cv2.VideoCapture('explosion2.mp4')
@@ -305,9 +307,10 @@ while True:
                     paused = not paused
 
         if paused:
-            windowSurface.fill(BACKGROUNDCOLOR)
-            drawText('Paused', font, windowSurface, WINDOWWIDTH // 3, WINDOWHEIGHT // 3)
-            pygame.mixer.music.stop() # when paused, the music stops
+            windowSurface.blit(pausedImage, (0, 0))
+            paused_text = 'Paused, press P to continue playing' 
+            paused_x = (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size(paused_text)[0]) // 2
+            drawText(paused_text, pygame.font.Font('gameFont.ttf', 25), windowSurface, paused_x, WINDOWHEIGHT//3) #when paused, the music stops
 
             immortality_music.stop()
             pygame.mixer.music.play()
@@ -452,6 +455,10 @@ while True:
 
                 # Decrease lives
                 if collided_baddie['type'] == 'asteroid':
+                    lives -= 1
+                elif collided_baddie['type'] == 'strong_asteroid':
+                    lives -= 1
+                elif collided_baddie['type'] == 'super_strong_asteroid':
                     lives -= 1
                 elif collided_baddie['type'] == 'spaceship':
                     lives -= 2
