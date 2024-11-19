@@ -1,4 +1,8 @@
 import pygame
+import sys
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 def drawText(text, font, surface, x, y, center=False):
     textobj = font.render(text, True, (0, 0, 0))  # Using black for text
@@ -9,14 +13,12 @@ def drawText(text, font, surface, x, y, center=False):
         textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-# Define the function to choose your character
 def choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT):
     selected_character = 0
     player_name = ""
     entering_name = True
     game_started = False
     character_rects = []
-      
 
     while not game_started:
         windowSurface.fill(WHITE)
@@ -27,11 +29,12 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
             drawText("Choose your character", pygame.font.Font('gameFont.ttf', 45), windowSurface, WINDOWWIDTH // 2, 200, center=True)
             character_rects = []
             for i, img in enumerate(character_images):
+                # Display each character's first image (damage0) for the selection screen
                 x = WINDOWWIDTH // (len(character_images) + 1) * (i + 1)
                 y = WINDOWHEIGHT // 2
-                img_rect = img.get_rect(center=(x, y))
+                img_rect = img[0].get_rect(center=(x, y))  # Start with the first damage state (3 lives)
                 character_rects.append(img_rect)
-                windowSurface.blit(img, (x - img.get_width() // 2, y - img.get_height() // 2))
+                windowSurface.blit(img[0], (x - img[0].get_width() // 2, y - img[0].get_height() // 2))
                 pygame.draw.rect(windowSurface, (255, 0, 0), img_rect, 1)
                 if i == selected_character:
                     pygame.draw.rect(windowSurface, BLACK, img_rect, 3)
@@ -41,16 +44,14 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            if event.type == pygame.MOUSEMOTION:
-                pygame.mouse.set_visible(True)
-            if event.type == pygame.MOUSEBUTTONDOWN:  # Détection d'un clic de souris
+
+            if event.type == pygame.MOUSEBUTTONDOWN:  # Mouse click detection
                 mouse_x, mouse_y = pygame.mouse.get_pos()
 
                 for i, rect in enumerate(character_rects):
                     if rect.collidepoint(mouse_x, mouse_y):
                         selected_character = i
                         game_started = True
-
 
             elif event.type == pygame.KEYDOWN:
                 if entering_name:
@@ -60,7 +61,6 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
                         player_name = player_name[:-1]
                     else:
                         player_name += event.unicode
-                        
                 else:
                     if event.key == pygame.K_LEFT:
                         selected_character = (selected_character - 1) % len(character_images)
@@ -72,7 +72,12 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
 
         pygame.display.update()
 
-    return character_images[selected_character], player_name
+    # Return the selected character's images and the player name
+    selected_character_images = character_images[selected_character]  # This gets the full image set for the selected character
+    return selected_character_images, player_name
+
+
+
 
 
 # Define the function to display a countdown timer

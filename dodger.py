@@ -24,7 +24,7 @@ BADDIEMINSIZE = 10  # baddie are the enemies
 BADDIEMAXSIZE = 30
 BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
-ADDNEWBADDIERATE = 6
+ADDNEWBADDIERATE = 15
 PLAYERMOVERATE = 5
 
 # Constants for the star and immortality
@@ -96,48 +96,51 @@ immortality_music = pygame.mixer.Sound('Immortality.wav') # Sound when you have 
 baddie_hit_sound = pygame.mixer.Sound('Boom.wav')  # Sound for hitting a baddie
 
 # Load images of things to avoid
-baddieImage = pygame.image.load('asteroid_.png')
+baddieImage1 = pygame.image.load('planet09.png')
+baddieImage2 = pygame.image.load('planet05.png')
+baddieImage3 = pygame.image.load('planet08.png')
 spaceshipImage = pygame.image.load('space.png')
 
 # Load images for superpowers
 starImage = pygame.image.load('starImage.png')
 starImage = pygame.transform.scale(starImage, (30, 30))
 
-   # Load character assets
-character_images = [
-        {
-            "stand_image": pygame.image.load("alienBlue.png"),  # Image for character selection
-            "ship_images": [
-                pygame.image.load("character_B_damage0.png"),
-                pygame.image.load("character_B_damage1.png"),
-                pygame.image.load("character_B_damage2.png"),
-            ],
-        },
-        {
-            "stand_image": pygame.image.load("alienGreen.png"),
-            "ship_images": [
-                pygame.image.load("character_G_damage0.png"),
-                pygame.image.load("character_G_damage1.png"),
-                pygame.image.load("character_G_damage2.png"),
-            ],
-        },
-        {
-            "stand_image": pygame.image.load("alienPink.png"),
-            "ship_images": [
-                pygame.image.load("character_P_damage0.png"),
-                pygame.image.load("character_P_damage1.png"),
-                pygame.image.load("character_P_damage2.png"),
-            ],
-        },
-        {
-            "stand_image": pygame.image.load("alienYellow.png"),
-            "ship_images": [
-                pygame.image.load("character_Y_damage0.png"),
-                pygame.image.load("character_Y_damage1.png"),
-                pygame.image.load("character_Y_damage2.png"),
-            ],
-        },
-    ]
+# Load images for characters 
+
+# Define character images for different colors
+character_Blue = [
+    pygame.image.load("alienBlue.png"),
+    pygame.image.load("character_B_damage0.png"),  # 3 lives
+    pygame.image.load("character_B_damage1.png"),  # 2 lives
+    pygame.image.load("character_B_damage2.png")   # 1 life
+]
+
+character_Green = [
+    pygame.image.load("alienGreen.png"),
+    pygame.image.load("character_G_damage0.png"),  # 3 lives
+    pygame.image.load("character_G_damage1.png"),  # 2 lives
+    pygame.image.load("character_G_damage2.png")   # 1 life
+]
+
+character_Pink = [
+    pygame.image.load("alienPink.png"),
+    pygame.image.load("character_P_damage0.png"),  # 3 lives
+    pygame.image.load("character_P_damage1.png"),  # 2 lives
+    pygame.image.load("character_P_damage2.png")   # 1 life
+]
+
+character_Yellow = [
+    pygame.image.load("alienYellow.png"),
+    pygame.image.load("character_Y_damage0.png"),  # 3 lives
+    pygame.image.load("character_Y_damage1.png"),  # 2 lives
+    pygame.image.load("character_Y_damage2.png")   # 1 life
+]
+
+# Group all characters into one variable
+character_images = [character_Blue, character_Green, character_Pink, character_Yellow]
+
+
+
 
 
 #Load image of heart
@@ -190,14 +193,35 @@ drawText('Press a key to start', pygame.font.Font('gameFont.ttf', 40), windowSur
 pygame.display.update()
 waitForPlayerToPressKey()
 
-# Using the functions          
-
+# Using the functions 
+# Choisir un personnage et son nom
 character_image, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
-playerImage = character_image   
-playerImage = pygame.transform.scale(character_image, (50, 50))
-playerRect = playerImage.get_rect() 
-display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
+
+# `character_image` est une image d'un des personnages, mais on doit extraire l'indice du personnage choisi
+# Trouver l'indice du personnage sélectionné parmi les 4 personnages
+# Exemple : Si le joueur choisit le personnage vert (alienGreen), tu peux utiliser `character_images[2]`
+# pour récupérer la liste des images de ce personnage.
+
+# L'indice de la couleur choisie, c'est le résultat de `selected_character`
+character_index = character_images.index(character_image)
+
+# Sélectionner la liste d'images du personnage choisi (par exemple, character_Green)
+selected_character_images = character_images[character_index]  # C'est une liste des images du personnage
+
+# Initialiser l'image du joueur (l'image avec 3 vies, c'est-à-dire damage0)
+playerImage = selected_character_images[0]  # L'image initiale du personnage avec 3 vies (damage0)
+
+
+# Créer un rectangle pour le joueur
+playerRect = playerImage.get_rect()
+
+# Afficher le compte à rebours avant le début du jeu
+display_the_countdown(windowSurface, large_font, playerImage, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
+
+# Cacher le curseur de la souris une fois le jeu commencé
 pygame.mouse.set_visible(False)
+
+         
 
 # Indicate the speed of play according to the score
 def get_game_speed(score):
@@ -215,9 +239,11 @@ topScore = 0
 FPS = FPS_initiale
 while True:
     baddies = []
+    bullets = []
     score = 0
     lives = 3  # Number of lives at start
-    
+    playerImage = selected_character_images[1]
+    playerImage = pygame.transform.scale(playerImage,(70,70))
     playerRect.topleft = (20, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
@@ -257,7 +283,7 @@ while True:
                         moveUp = True
                     if event.key == K_DOWN or event.key == K_s:
                         moveUp = False
-                        moveDown = True 
+                        moveDown = True
 
             if event.type == KEYUP:
                 if not paused: 
@@ -294,15 +320,37 @@ while True:
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
+            prob = random.randint(1, 100)  # Génère un nombre entre 1 et 100
+            if prob <= 50:  # 50% de chance
+                baddieType = 'asteroid'
+                baddieImage = baddieImage1
+                baddieHealth = 1
+            elif prob <= 80:  # 30% de chance (50% + 30% = 80%)
+                baddieType = 'strong_asteroid'
+                baddieImage = baddieImage2
+                baddieHealth = 2
+            else:  # 20% de chance
+                baddieType = 'super_strong_asteroid'
+                baddieImage = baddieImage3  # Assurez-vous que baddieImage3 existe
+                baddieHealth = 3  # Points de vie plus élevés pour le type super fort
+
+        # Crée un nouveau baddie
             newBaddie = {
-                'rect': pygame.Rect(WINDOWWIDTH - baddieSize, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+                'rect': pygame.Rect(
+                    WINDOWWIDTH - baddieSize,
+                    random.randint(0, WINDOWHEIGHT - baddieSize),
+                    baddieSize,
+                    baddieSize
+                ),
                 'speed': -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                 'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                'type': 'asteroid'  # Type of baddie
+                'type': baddieType,
+                'health': baddieHealth
             }
             baddies.append(newBaddie)
+            
 
-            for x in range(1, 120):
+            for x in range(1, 220):
                 if score == 100 * x:
                     baddieSize = random.randint(SPACEMINSIZE, SPACEMAXSIZE)
                     newBaddie = {
@@ -438,11 +486,13 @@ while True:
                     mainClock.tick(FPS)
             
                 if lives <= 0:  # If no lives left, the game ends                 
-                    
                     break
                 else:
+                    playerImage = selected_character_images[4-lives]
+                    playerImage = pygame.transform.scale(playerImage,(70,70))
                     playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
                     baddies = []  # Clear all baddies on screen
+                    
                     pygame.time.wait(1000)  # Pause for a second before continuing
                 
                 pygame.mixer.music.play()
