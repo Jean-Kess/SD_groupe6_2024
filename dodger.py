@@ -103,11 +103,42 @@ spaceshipImage = pygame.image.load('space.png')
 starImage = pygame.image.load('starImage.png')
 starImage = pygame.transform.scale(starImage, (30, 30))
 
-# Load images for characters               
-character_image1 = pygame.image.load('character1.png')
-character_image2 = pygame.image.load('character2.png')
-character_image3 = pygame.image.load('character3.png')
-character_images = [character_image1, character_image2, character_image3]
+   # Load character assets
+character_images = [
+        {
+            "stand_image": pygame.image.load("alienBlue.png"),  # Image for character selection
+            "ship_images": [
+                pygame.image.load("character_B_damage0.png"),
+                pygame.image.load("character_B_damage1.png"),
+                pygame.image.load("character_B_damage2.png"),
+            ],
+        },
+        {
+            "stand_image": pygame.image.load("alienGreen.png"),
+            "ship_images": [
+                pygame.image.load("character_G_damage0.png"),
+                pygame.image.load("character_G_damage1.png"),
+                pygame.image.load("character_G_damage2.png"),
+            ],
+        },
+        {
+            "stand_image": pygame.image.load("alienPink.png"),
+            "ship_images": [
+                pygame.image.load("character_P_damage0.png"),
+                pygame.image.load("character_P_damage1.png"),
+                pygame.image.load("character_P_damage2.png"),
+            ],
+        },
+        {
+            "stand_image": pygame.image.load("alienYellow.png"),
+            "ship_images": [
+                pygame.image.load("character_Y_damage0.png"),
+                pygame.image.load("character_Y_damage1.png"),
+                pygame.image.load("character_Y_damage2.png"),
+            ],
+        },
+    ]
+
 
 #Load image of heart
 heartImage = pygame.image.load('heartImage.png')  # Load the heart image
@@ -160,6 +191,7 @@ pygame.display.update()
 waitForPlayerToPressKey()
 
 # Using the functions          
+
 character_image, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
 playerImage = character_image   
 playerImage = pygame.transform.scale(character_image, (50, 50))
