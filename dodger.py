@@ -219,7 +219,7 @@ waitForPlayerToPressKey()
 
 # Using the functions 
 # Choose character
-character_image, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
+character_images, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
 character_index = character_images.index(character_image) # The index of the chosen colour, this is the result of `selected_character`.
 selected_character_images = character_images[character_index]  # This is a list of images of the character
 playerImage = selected_character_images[0]  # The initial image of the character with 3 lives (damage0)
@@ -504,7 +504,7 @@ while True:
                 else:
                     playerImage = selected_character_images[4-lives]
                     playerImage = pygame.transform.scale(playerImage,(70,70))
-                    playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
+                    playerRect.topleft = (20, WINDOWHEIGHT / 2)  # Reset player position
                     baddies = []  # Clear all baddies on screen
                     
                     pygame.time.wait(1000)  # Pause for a second before continuing
