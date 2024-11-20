@@ -41,10 +41,10 @@ bullets = []
 BULLET_SPEED = 10
 BULLET_SIZE = (10, 5)
 BULLET_COLOR = {
-    0: (0, 0, 255),   # Blue for the first character (index 0)
-    1: (0, 255, 0),   # Green for the second character (index 1)
-    2: (255, 0, 255), # Pink/Magenta for the third (index 2)
-    3: (255, 255, 0)  # Yellow for the fourth (index 3)
+    0: (163, 195, 235),   # Blue for the first character (index 0)
+    1: (139, 207, 186),   # Green for the second character (index 1)
+    2: (243, 175, 197),   # Pink/Magenta for the third (index 2)
+    3: (255, 214, 52)     # Yellow for the fourth (index 3)
 }
 
 
