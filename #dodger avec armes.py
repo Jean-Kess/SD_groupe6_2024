@@ -40,7 +40,13 @@ bullets = []
 # Projectile constants
 BULLET_SPEED = 10
 BULLET_SIZE = (10, 5)
-BULLET_COLOR = (255, 0, 0)  # Red
+BULLET_COLOR = {
+    0: (0, 0, 255),   # Blue for the first character (index 0)
+    1: (0, 255, 0),   # Green for the second character (index 1)
+    2: (255, 0, 255), # Pink/Magenta for the third (index 2)
+    3: (255, 255, 0)  # Yellow for the fourth (index 3)
+}
+
 
 #Definition of functions
 def terminate():
@@ -106,10 +112,12 @@ def update_star(starRect):
         starRect.left = WINDOWWIDTH  # Reset its position to the right edge
         
 # Projectile firing function
-def shoot_bullet(playerRect):
+def shoot_bullet(playerRect, color): # Add color parameter
     bullet = {
         'rect': pygame.Rect(playerRect.right, playerRect.centery - BULLET_SIZE[1] // 2, BULLET_SIZE[0], BULLET_SIZE[1]),
-        'speed': BULLET_SPEED
+        'speed': BULLET_SPEED,
+        'color': color # Add color to the bullet dictionary
+
     }
     bullets.append(bullet)
 
@@ -235,7 +243,7 @@ waitForPlayerToPressKey()
 
 # Using the functions 
 # Choose character
-character_image, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
+character_image, player_name, selected_character = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
 character_index = character_images.index(character_image) # The index of the chosen colour, this is the result of `selected_character`.
 selected_character_images = character_images[character_index]  # This is a list of images of the character
 playerImage = selected_character_images[0]  # The initial image of the character with 3 lives (damage0)
@@ -292,7 +300,10 @@ while True:
                 if event.key == K_r: # Pressing 'r' shows the rules of the game
                     display_rules()
                 if event.key == K_f: # Pressing 'f' to fire the baddies
-                    shoot_bullet(playerRect)
+                    bullet_color = BULLET_COLOR.get(selected_character, (255, 0, 0)) # default to red if no match
+                    shoot_bullet(playerRect, bullet_color)  # Pass bullet color here
+
+
                 if event.key == K_ESCAPE:  # Pressing ESC quits
                     terminate()
                 if event.key == K_p:  # Pressing 'p' pauses/unpauses the game
@@ -477,7 +488,7 @@ while True:
             
         # Dessin des projectiles
         for bullet in bullets:
-            pygame.draw.rect(windowSurface, BULLET_COLOR, bullet['rect'])
+            pygame.draw.rect(windowSurface, bullet['color'], bullet['rect'])
 
         # Display immortality timer
         if star_active:

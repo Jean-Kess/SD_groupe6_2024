@@ -71,12 +71,12 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
                     elif event.key == pygame.K_RETURN:
                         game_started = True
                         pygame.mouse.set_visible(False)
-
+    
         pygame.display.update()
-
+        
     # Return the selected character's images and the player name
     selected_character_images = character_images[selected_character]  # This gets the full image set for the selected character
-    return selected_character_images, player_name
+    return selected_character_images, player_name, selected_character 
 
 
 # Define the function to display a countdown timer
