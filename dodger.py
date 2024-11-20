@@ -219,7 +219,7 @@ waitForPlayerToPressKey()
 
 # Using the functions 
 # Choose character
-character_image, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
+character_image, player_name, selected_character = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
 character_index = character_images.index(character_image) # The index of the chosen colour, this is the result of `selected_character`.
 selected_character_images = character_images[character_index]  # This is a list of images of the character
 playerImage = selected_character_images[0]  # The initial image of the character with 3 lives (damage0)
