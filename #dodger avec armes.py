@@ -556,7 +556,7 @@ while True:
                 else:
                     playerImage = selected_character_images[4-lives]
                     playerImage = pygame.transform.scale(playerImage,(70,70))
-                    playerRect.topleft = (50, WINDOWHEIGHT / 2)  # Reset player position
+                    playerRect.topleft = (20, WINDOWHEIGHT / 2)  # Reset player position
                     baddies = []  # Clear all baddies on screen
                     
                     pygame.time.wait(1000)  # Pause for a second before continuing
