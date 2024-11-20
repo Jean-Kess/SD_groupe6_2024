@@ -34,9 +34,30 @@ STAR_SPEED_MULTIPLIER = 3
 STAR_SPEED = 5  # Speed of the star
 
 #Definition of functions
+
 def terminate():
     pygame.quit()
     sys.exit()
+
+# define the function that displays the game rules
+def display_rules():
+    image = pygame.image.load("Rules.png") # Load the image
+    image = pygame.transform.scale(image, (WINDOWWIDTH, WINDOWHEIGHT))  # Adjust the size
+
+    screen_copy = windowSurface.copy() # Create a temporary surface to display the image
+    screen_copy.blit(image, (0, 0))    # Display the image on the temporary surface
+    windowSurface.blit(screen_copy, (0, 0))  # Display the temporary surface on the main screen
+    pygame.display.flip()  # Update display
+
+    #  Wait for the user to press a key to exit
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                return 1 
+
 
 def waitForPlayerToPressKey():
     while True:
@@ -44,6 +65,8 @@ def waitForPlayerToPressKey():
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
+                if event.key == K_r:
+                    display_rules()
                 if event.key == K_ESCAPE:
                     terminate()
                 return
@@ -105,8 +128,6 @@ spaceshipImage = pygame.image.load('space.png')
 starImage = pygame.image.load('starImage.png')
 starImage = pygame.transform.scale(starImage, (30, 30))
 
-# Load images for characters 
-
 # Define character images for different colors
 character_Blue = [
     pygame.image.load("alienBlue.png"),
@@ -138,10 +159,6 @@ character_Yellow = [
 
 # Group all characters into one variable
 character_images = [character_Blue, character_Green, character_Pink, character_Yellow]
-
-
-
-
 
 #Load image of heart
 heartImage = pygame.image.load('heartImage.png')  # Load the heart image
@@ -191,37 +208,26 @@ def draw_hearts(lives, font, surface, x, y):
 
 # Show the "Start" screen
 windowSurface.fill(BACKGROUNDCOLOR)
-drawText('Press a key to start', pygame.font.Font('gameFont.ttf', 40), windowSurface, (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 40).size('Press a key to start.')[0]) // 2, (WINDOWHEIGHT / 3) + 50)
+drawText('Press a key to start', pygame.font.Font('gameFont.ttf', 40), windowSurface,
+         (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 40).size('Press a key to start.')[0]) // 2,
+         (WINDOWHEIGHT / 3) + 50)
+drawText('Press R to see rules', pygame.font.Font('gameFont.ttf', 25), windowSurface,
+         (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size('Press r to see rules')[0]) // 2,
+         (WINDOWHEIGHT / 3) + 150)
 pygame.display.update()
 waitForPlayerToPressKey()
 
 # Using the functions 
-# Choisir un personnage et son nom
+# Choose character
 character_image, player_name = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
-
-# `character_image` est une image d'un des personnages, mais on doit extraire l'indice du personnage choisi
-# Trouver l'indice du personnage sélectionné parmi les 4 personnages
-# Exemple : Si le joueur choisit le personnage vert (alienGreen), tu peux utiliser `character_images[2]`
-# pour récupérer la liste des images de ce personnage.
-
-# L'indice de la couleur choisie, c'est le résultat de `selected_character`
-character_index = character_images.index(character_image)
-
-# Sélectionner la liste d'images du personnage choisi (par exemple, character_Green)
-selected_character_images = character_images[character_index]  # C'est une liste des images du personnage
-
-# Initialiser l'image du joueur (l'image avec 3 vies, c'est-à-dire damage0)
-playerImage = selected_character_images[0]  # L'image initiale du personnage avec 3 vies (damage0)
-
-
-# Créer un rectangle pour le joueur
+character_index = character_images.index(character_image) # The index of the chosen colour, this is the result of `selected_character`.
+selected_character_images = character_images[character_index]  # This is a list of images of the character
+playerImage = selected_character_images[0]  # The initial image of the character with 3 lives (damage0)
 playerRect = playerImage.get_rect()
 
-# Afficher le compte à rebours avant le début du jeu
-display_the_countdown(windowSurface, large_font, playerImage, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
+display_the_countdown(windowSurface, large_font, playerImage, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT) # Display the countdown to the start of the game
+pygame.mouse.set_visible(False)  # Hide the mouse cursor once the game has started
 
-# Cacher le curseur de la souris une fois le jeu commencé
-pygame.mouse.set_visible(False)
 
          
 
@@ -269,9 +275,11 @@ while True:
                 terminate()
 
             if event.type == KEYDOWN:
+                if event.key == K_r: # Pressing 'r' shows the rules of the game
+                    display_rules()
                 if event.key == K_ESCAPE:  # Pressing ESC quits
                     terminate()
-                if event.key == K_p:  # Pressing 'P' pauses/unpauses the game
+                if event.key == K_p:  # Pressing 'p' pauses/unpauses the game
                     paused = not paused
                 if not paused:
                     if event.key == K_LEFT or event.key == K_a:
@@ -323,21 +331,23 @@ while True:
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            prob = random.randint(1, 100)  # Génère un nombre entre 1 et 100
-            if prob <= 50:  # 50% de chance
+            prob = random.randint(1, 100)  #  Generates a number between 1 and 100
+
+            if prob <= 50:  # 50% probability
                 baddieType = 'asteroid'
                 baddieImage = baddieImage1
                 baddieHealth = 1
-            elif prob <= 80:  # 30% de chance (50% + 30% = 80%)
+            elif prob <= 80:  # 30% probability (50% + 30% = 80%)
                 baddieType = 'strong_asteroid'
                 baddieImage = baddieImage2
                 baddieHealth = 2
-            else:  # 20% de chance
+            else:  # 20% probability
                 baddieType = 'super_strong_asteroid'
                 baddieImage = baddieImage3  
-                baddieHealth = 3  # Points de vie plus élevés pour le type super fort
+                baddieHealth = 3  #  Higher hit points for the super-strong type
 
-        # Crée un nouveau baddie
+
+        # Create a new baddie
             newBaddie = {
                 'rect': pygame.Rect(
                     WINDOWWIDTH - baddieSize,
@@ -430,18 +440,15 @@ while True:
         if starRect:
             windowSurface.blit(starImage, starRect)
 
-
         # Display immortality timer
         if star_active:
             immortality_seconds = star_effect_counter // FPS_initiale
             drawTextWhite(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 120)
-
         pygame.display.update()
 
         # Play explosion video if it's active
         if playing_explosion:
             play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)  # Offset explosion position
-
         pygame.display.update()
 
         # Check if any of the baddies have hit the player

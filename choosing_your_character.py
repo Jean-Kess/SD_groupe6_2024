@@ -46,7 +46,7 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
                 terminate()
             if event.type == pygame.MOUSEMOTION:
                 pygame.mouse.set_visible(True)
-                
+
             if event.type == pygame.MOUSEBUTTONDOWN:  # Mouse click detection
                 mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -77,9 +77,6 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
     # Return the selected character's images and the player name
     selected_character_images = character_images[selected_character]  # This gets the full image set for the selected character
     return selected_character_images, player_name
-
-
-
 
 
 # Define the function to display a countdown timer
