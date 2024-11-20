@@ -20,8 +20,8 @@ BLACK = (0, 0, 0)
 FPS_initiale = 30
 SPACEMINSIZE = 200
 SPACEMAXSIZE = 300
-BADDIEMINSIZE = 10  # baddie are the enemies
-BADDIEMAXSIZE = 30
+BADDIEMINSIZE = 15  # baddie are the enemies
+BADDIEMAXSIZE = 60
 BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 15
@@ -145,7 +145,7 @@ character_images = [character_Blue, character_Green, character_Pink, character_Y
 
 #Load image of heart
 heartImage = pygame.image.load('heartImage.png')  # Load the heart image
-heartImage = pygame.transform.scale(heartImage, (22, 22))  # Adjust size if needed
+heartImage = pygame.transform.scale(heartImage, (22, 22))  # Adjust size 
 
 # Load background image
 backgroundImage = pygame.image.load('backgroundsky.png').convert()
@@ -334,7 +334,7 @@ while True:
                 baddieHealth = 2
             else:  # 20% de chance
                 baddieType = 'super_strong_asteroid'
-                baddieImage = baddieImage3  # Assurez-vous que baddieImage3 existe
+                baddieImage = baddieImage3  
                 baddieHealth = 3  # Points de vie plus élevés pour le type super fort
 
         # Crée un nouveau baddie
