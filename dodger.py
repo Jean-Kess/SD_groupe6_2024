@@ -22,10 +22,14 @@ SPACEMINSIZE = 200
 SPACEMAXSIZE = 300
 BADDIEMINSIZE = 15  # baddie are the enemies
 BADDIEMAXSIZE = 60
-BADDIEMINSPEED = 1
+BADDIEMINSPEED = 3
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 15
 PLAYERMOVERATE = 5
+screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+scroll_speed = 2 #speed at which the background image scrolls
+background_x1 = 0
+background_x2 = WINDOWWIDTH
 
 # Constants for the star and immortality
 STAR_APPEAR_FRAMES = FPS_initiale * 10
@@ -57,7 +61,7 @@ def display_rules():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 return 1 
-
+        pygame.mixer.music.play() #turn on the background music
 
 def waitForPlayerToPressKey():
     while True:
@@ -67,6 +71,7 @@ def waitForPlayerToPressKey():
             if event.type == KEYDOWN:
                 if event.key == K_r:
                     display_rules()
+                    pygame.mixer.music.stop()
                 if event.key == K_ESCAPE:
                     terminate()
                 return
@@ -276,6 +281,9 @@ while True:
 
             if event.type == KEYDOWN:
                 if event.key == K_r: # Pressing 'r' shows the rules of the game
+                    pygame.mixer.music.stop() # Stop the background music
+                    immortality_music.stop()  # Stop the immortality music if it is on
+
                     display_rules()
                 if event.key == K_ESCAPE:  # Pressing ESC quits
                     terminate()
@@ -311,19 +319,30 @@ while True:
 
             if event.type == MOUSEBUTTONDOWN:
                 mouse_pos = event.pos
-                if 500 <= mouse_pos[0] <= 580 and 10 <= mouse_pos[1] <= 60:  # Adjust these for your button size
+                if 500 <= mouse_pos[0] <= 580 and 10 <= mouse_pos[1] <= 60: 
                     paused = not paused
 
         if paused:
             windowSurface.blit(pausedImage, (0, 0))
             paused_text = 'Paused, press P to continue playing' 
             paused_x = (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size(paused_text)[0]) // 2
-            drawText(paused_text, pygame.font.Font('gameFont.ttf', 25), windowSurface, paused_x, WINDOWHEIGHT//3) #when paused, the music stops
-
+            drawText(paused_text, pygame.font.Font('gameFont.ttf', 25), windowSurface, paused_x, WINDOWHEIGHT//3)
+            #when paused, the music stops
             immortality_music.stop()
             pygame.mixer.music.play()
             pygame.display.update()
             continue
+        
+        #Backrgound scrolling
+        background_x1 -= scroll_speed
+        background_x2 -= scroll_speed
+        if background_x1 <= -WINDOWWIDTH:
+            background_x1 = WINDOWWIDTH
+        if background_x2 <= -WINDOWWIDTH:
+            background_x2 = WINDOWWIDTH
+        # Draw the two background images that will follow each other ad infinitum
+        screen.blit(backgroundImage, (background_x1, 0))
+        screen.blit(backgroundImage, (background_x2, 0))
 
         # Add new baddies at the top of the screen, if needed
         if not reverseCheat and not slowCheat:
@@ -427,11 +446,10 @@ while True:
             if star_effect_counter <= 0:
                 star_active = False
                 
-        # Draw the game world on the window
-        windowSurface.blit(backgroundImage, (0, 0))  
+        # Draw the game world on the window  
         drawTextWhite('Score: %s' % (score), font, windowSurface, 10, 0)
         drawTextWhite('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
-        draw_hearts(lives, font, windowSurface, 10, 80)  #  Pass necessary arguments
+        draw_hearts(lives, font, windowSurface, 10, 80) 
         windowSurface.blit(playerImage, playerRect)
 
         # Draw each baddie

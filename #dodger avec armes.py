@@ -21,12 +21,16 @@ BLACK = (0, 0, 0)
 FPS_initiale = 30
 SPACEMINSIZE = 200
 SPACEMAXSIZE = 300
-BADDIEMINSIZE = 10  # baddie are the enemies
-BADDIEMAXSIZE = 30
-BADDIEMINSPEED = 1
+BADDIEMINSIZE = 15  # baddie are the enemies
+BADDIEMAXSIZE = 60
+BADDIEMINSPEED = 3
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 15
 PLAYERMOVERATE = 5
+screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+scroll_speed = 2 #speed at which the background image scrolls
+background_x1 = 0
+background_x2 = WINDOWWIDTH
 
 # Constants for the star and immortality
 STAR_APPEAR_FRAMES = FPS_initiale * 10
@@ -71,7 +75,8 @@ def display_rules():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 return 1 
-            
+        pygame.mixer.music.play() #turn on the background music
+
 def waitForPlayerToPressKey():
     while True:
         for event in pygame.event.get():
@@ -80,6 +85,7 @@ def waitForPlayerToPressKey():
             if event.type == KEYDOWN:
                 if event.key == K_r:
                     display_rules()
+                    pygame.mixer.music.stop()
                 if event.key == K_ESCAPE:
                     terminate()
                 return
@@ -141,11 +147,13 @@ gameOverSound = pygame.mixer.Sound('GameOver!.wav') # Sound when you lose
 pygame.mixer.music.load('Background.wav') # Background sound
 immortality_music = pygame.mixer.Sound('Immortality.wav') # Sound when you have the immortality star power
 baddie_hit_sound = pygame.mixer.Sound('Boom.wav')  # Sound for hitting a baddie
+baddie_shoot_sound = pygame.mixer.Sound('Boom.wav')  # Sound for shoot a baddie
+
 
 # Load images of things to avoid
 baddieImage1 = pygame.image.load('planet09.png')
-baddieImage2 = pygame.image.load('planet05.png')
-baddieImage3 = pygame.image.load('planet08.png')
+baddieImage2 = pygame.image.load('planet07.png')
+baddieImage3 = pygame.image.load('planet01.png')
 spaceshipImage = pygame.image.load('space.png')
 
 # Load images for superpowers
@@ -278,8 +286,8 @@ while True:
     moveLeft = moveRight = moveUp = moveDown = False
     reverseCheat = slowCheat = False
     baddieAddCounter = 0
+    nb_baddies_destroyed = 0
     pygame.mixer.music.play(-1, 0.0)
-
 
     # Star variables
     star_counter = 0
@@ -288,16 +296,18 @@ while True:
     star_effect_counter = 0
 
     # Game loop
-    while True:  
+    while True: 
         if not paused:
             score += 1
-    
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
 
             if event.type == KEYDOWN:
                 if event.key == K_r: # Pressing 'r' shows the rules of the game
+                    pygame.mixer.music.stop() # Stop the background music
+                    immortality_music.stop()  # Stop the immortality music if it is on
                     display_rules()
                 if event.key == K_f: # Pressing 'f' to fire the baddies
                     bullet_color = BULLET_COLOR.get(selected_character, (255, 0, 0)) # default to red if no match
@@ -322,8 +332,6 @@ while True:
                         moveUp = False
                         moveDown = True
                         
-
-
             if event.type == KEYUP:
                 if not paused: 
                     if event.key == K_LEFT or event.key == K_a:
@@ -340,7 +348,7 @@ while True:
 
             if event.type == MOUSEBUTTONDOWN:
                 mouse_pos = event.pos
-                if 500 <= mouse_pos[0] <= 580 and 10 <= mouse_pos[1] <= 60:  # Adjust these for your button size
+                if 500 <= mouse_pos[0] <= 580 and 10 <= mouse_pos[1] <= 60: 
                     paused = not paused
 
         if paused:
@@ -348,11 +356,23 @@ while True:
             paused_text = 'Paused, press P to continue playing' 
             paused_x = (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size(paused_text)[0]) // 2
             drawText(paused_text, pygame.font.Font('gameFont.ttf', 25), windowSurface, paused_x, WINDOWHEIGHT//3) #when paused, the music stops
-
+            #when paused, the music stops
             immortality_music.stop()
             pygame.mixer.music.play()
             pygame.display.update()
             continue
+       
+        
+        #Backrgound scrolling
+        background_x1 -= scroll_speed
+        background_x2 -= scroll_speed
+        if background_x1 <= -WINDOWWIDTH:
+            background_x1 = WINDOWWIDTH
+        if background_x2 <= -WINDOWWIDTH:
+            background_x2 = WINDOWWIDTH
+        # Draw the two background images that will follow each other ad infinitum
+        screen.blit(backgroundImage, (background_x1, 0))
+        screen.blit(backgroundImage, (background_x2, 0))
         
         # Projectiles update
         for bullet in bullets[:]:
@@ -369,6 +389,10 @@ while True:
                     break
                 if baddie['health'] <= 0:  # Deletes the baddie if it has no life left
                     baddies.remove(baddie)
+                    nb_baddies_destroyed += 1
+                    baddie_shoot_sound.play()
+                    if nb_baddies_destroyed == 30: #when you hit 30 baddies you get an extra life
+                        lives += 1
                     break
 
 
@@ -395,8 +419,8 @@ while True:
         # Create a new baddie
             newBaddie = {
                 'rect': pygame.Rect(
-                    WINDOWWIDTH - baddieSize,
-                    random.randint(0, WINDOWHEIGHT - baddieSize),
+                    WINDOWWIDTH + baddieSize,  # Start just off-screen to the right
+                    random.randint(0, WINDOWHEIGHT - baddieSize),  # Random vertical position
                     baddieSize,
                     baddieSize
                 ),
@@ -472,28 +496,30 @@ while True:
             star_effect_counter -= 1
             if star_effect_counter <= 0:
                 star_active = False
-                
-        # Draw the game world on the window
-        windowSurface.blit(backgroundImage, (0, 0))  
+        
+        # Draw the game world on the window  
+        #windowSurface.blit(backgroundImage, (0, 0))  
+    
         drawTextWhite('Score: %s' % (score), font, windowSurface, 10, 0)
         drawTextWhite('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
-        draw_hearts(lives, font, windowSurface, 10, 80)  #  Pass necessary arguments
+        drawTextWhite(f'Number of baddies destroyed: {nb_baddies_destroyed}',font, windowSurface, 10, 80)
+        draw_hearts(lives, font, windowSurface, 10, 120)  
         windowSurface.blit(playerImage, playerRect)
-
+    
         # Draw each baddie
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
         if starRect:
             windowSurface.blit(starImage, starRect)
             
-        # Dessin des projectiles
+        # Drawing bullets
         for bullet in bullets:
             pygame.draw.rect(windowSurface, bullet['color'], bullet['rect'])
 
         # Display immortality timer
         if star_active:
             immortality_seconds = star_effect_counter // FPS_initiale
-            drawTextWhite(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 120)
+            drawTextWhite(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 160)
 
         pygame.display.update()
 
