@@ -19,8 +19,8 @@ BACKGROUNDCOLOR = (255, 255, 255)  # white
 WHITE = (255, 255, 255)  
 BLACK = (0, 0, 0)  
 FPS_initiale = 30
-SPACEMINSIZE = 200
-SPACEMAXSIZE = 300
+SPACEMINSIZE = 150
+SPACEMAXSIZE = 250
 BADDIEMINSIZE = 15  # baddie are the enemies
 BADDIEMAXSIZE = 60
 BADDIEMINSPEED = 3
@@ -59,7 +59,7 @@ def terminate():
 
 # define the function that displays the game rules
 def display_rules():
-    image = pygame.image.load("Rules.png") # Load the image
+    image = pygame.image.load("Rules_of_game.png") # Load the image
     image = pygame.transform.scale(image, (WINDOWWIDTH, WINDOWHEIGHT))  # Adjust the size
 
     screen_copy = windowSurface.copy() # Create a temporary surface to display the image
@@ -154,7 +154,7 @@ baddie_shoot_sound = pygame.mixer.Sound('Boom.wav')  # Sound for shoot a baddie
 baddieImage1 = pygame.image.load('planet09.png')
 baddieImage2 = pygame.image.load('planet07.png')
 baddieImage3 = pygame.image.load('planet01.png')
-spaceshipImage = pygame.image.load('space.png')
+spaceshipImage = pygame.image.load('spaceship2.png')
 
 # Load images for superpowers
 starImage = pygame.image.load('starImage.png')
@@ -203,7 +203,7 @@ pausedImage = pygame.image.load('pausedImage.png').convert()
 pausedImage = pygame.transform.scale(pausedImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
 
 # Explosion video
-explosion_video = cv2.VideoCapture('explosion2.mp4')
+explosion_video = cv2.VideoCapture('explosion22-unscreen.gif')
 playing_explosion = False  # Flag to indicate if the explosion is playing
 explosion_x = 0  # X coordinate for the explosion
 explosion_y = 0  # Y coordinate for the explosion
