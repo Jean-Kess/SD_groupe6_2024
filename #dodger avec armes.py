@@ -1,49 +1,30 @@
-#dodger avec armes
-#firstly, in order to be able to see the explosion video, you need to write this in your terminal :  pip install opencv-python
-
+# dodger with arms
 import pygame
-from choosing_your_character import choose_character, display_the_countdown # Importing functions from choix_personnage.py
 import random
+import numpy as np  # Import numpy for mask creation
 import sys
 from pygame.locals import *
 import cv2
-
-paused = False 
-
+from choosing_your_character import choose_character, display_the_countdown
 
 # Constants
 WINDOWWIDTH = 800 
 WINDOWHEIGHT = 800
-TEXTCOLOR = (255, 255, 255)  # white
-BACKGROUNDCOLOR = (255, 255, 255)  # white
+TEXTCOLOR = (255, 255, 255)  # White
+BACKGROUNDCOLOR = (255, 255, 255)  # White
 WHITE = (255, 255, 255)  
 BLACK = (0, 0, 0)  
-FPS_initiale = 30
+FPS_INITIAL = 30
 SPACEMINSIZE = 150
 SPACEMAXSIZE = 250
-BADDIEMINSIZE = 15  # baddie are the enemies
+BADDIEMINSIZE = 15
 BADDIEMAXSIZE = 60
 BADDIEMINSPEED = 3
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 15
 PLAYERMOVERATE = 5
-screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
-scroll_speed = 2 #speed at which the background image scrolls
-background_x1 = 0
-background_x2 = WINDOWWIDTH
-
-# Constants for the star and immortality
-STAR_APPEAR_FRAMES = FPS_initiale * 10
-STAR_EFFECT_FRAMES = FPS_initiale * 10
-STAR_SPEED_MULTIPLIER = 3
-STAR_SPEED = 5  # Speed of the star
-
-# List for storing projectiles
-bullets = []
-
-# Projectile constants
-BULLET_SPEED = 10
 BULLET_SIZE = (10, 5)
+BULLET_SPEED = 10
 BULLET_COLOR = {
     0: (163, 195, 235),   # Blue for the first character (index 0)
     1: (139, 207, 186),   # Green for the second character (index 1)
@@ -51,575 +32,594 @@ BULLET_COLOR = {
     3: (255, 214, 52)     # Yellow for the fourth (index 3)
 }
 
-
-#Definition of functions
-def terminate():
-    pygame.quit()
-    sys.exit()
-
-# define the function that displays the game rules
-def display_rules():
-    image = pygame.image.load("Rules_of_game.png") # Load the image
-    image = pygame.transform.scale(image, (WINDOWWIDTH, WINDOWHEIGHT))  # Adjust the size
-
-    screen_copy = windowSurface.copy() # Create a temporary surface to display the image
-    screen_copy.blit(image, (0, 0))    # Display the image on the temporary surface
-    windowSurface.blit(screen_copy, (0, 0))  # Display the temporary surface on the main screen
-    pygame.display.flip()  # Update display
-
-    #  Wait for the user to press a key to exit
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                return 1 
-        pygame.mixer.music.play() #turn on the background music
-
-def waitForPlayerToPressKey():
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                terminate()
-            if event.type == KEYDOWN:
-                if event.key == K_r:
-                    display_rules()
-                    pygame.mixer.music.stop()
-                if event.key == K_ESCAPE:
-                    terminate()
-                return
-    
-
-def playerHasHitBaddie(playerRect, playerImage, baddies):  # Add playerImage argument
-    playerMask = pygame.mask.from_surface(playerImage)  # Create player mask
-    for b in baddies:
-        baddieMask = pygame.mask.from_surface(b['surface'])  # Create baddie mask
-        offset = (b['rect'].x - playerRect.x, b['rect'].y - playerRect.y)
-        if playerMask.overlap(baddieMask, offset):  # Check for mask overlap
-            return b
-    return None
-
-def drawText(text, font, surface, x, y):
-    textobj = font.render(text, 1, (0, 0, 0))  # Render the text in black
-    textrect = textobj.get_rect() # Get the rectangle for the rendered text
-    textrect.topleft = (x, y) # Set the position of the text
-    surface.blit(textobj, textrect) # Blit the text onto the surface
-
-def drawTextWhite(text, font, surface, x, y):
-    textobj = font.render(text, True, (255, 255, 255)) # Render the text in white
-    textrect = textobj.get_rect() # Get the rectangle for the rendered text
-    textrect.topleft = (x, y) # Set the position of the text
-    surface.blit(textobj, textrect) # Blit the text onto the surface
-
-def update_star(starRect):
-    starRect.move_ip(-STAR_SPEED, 0)  # Move the star to the left
-    if starRect.right < 0:  # If the star goes off-screen
-        starRect.left = WINDOWWIDTH  # Reset its position to the right edge
-        
-# Projectile firing function
-def shoot_bullet(playerRect, color): # Add color parameter
-    bullet = {
-        'rect': pygame.Rect(playerRect.right, playerRect.centery - BULLET_SIZE[1] // 2, BULLET_SIZE[0], BULLET_SIZE[1]),
-        'speed': BULLET_SPEED,
-        'color': color # Add color to the bullet dictionary
-
-    }
-    bullets.append(bullet)
-
 # Initialize Pygame
 pygame.init()
-pygame.mixer.init()  # Initialize the mixer for sound
+pygame.mixer.init()
 mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Dodger')
-pygame.mouse.set_visible(False)
 
-# Set up the fonts
+
+# Fonts
 small_font = pygame.font.Font('gameFont.ttf', 28)
 font = pygame.font.Font('Anton-Regular.ttf', 38)
 large_font = pygame.font.Font('Anton-Regular.ttf', 48) 
 game_over_font = pygame.font.Font('gameFont.ttf', 64)
 retry_font = pygame.font.Font('gameFont.ttf', 35)
 
-# Set up sounds
-gameOverSound = pygame.mixer.Sound('GameOver!.wav') # Sound when you lose
-pygame.mixer.music.load('Background.wav') # Background sound
-immortality_music = pygame.mixer.Sound('Immortality.wav') # Sound when you have the immortality star power
-baddie_hit_sound = pygame.mixer.Sound('Boom.wav')  # Sound for hitting a baddie
-baddie_shoot_sound = pygame.mixer.Sound('Boom.wav')  # Sound for shoot a baddie
+# Sounds
+gameOverSound = pygame.mixer.Sound('GameOver!.wav')
+pygame.mixer.music.load('Background.wav')
+immortality_music = pygame.mixer.Sound('Immortality.wav')
+baddie_hit_sound = pygame.mixer.Sound('Boom.wav')
+baddie_shoot_sound = pygame.mixer.Sound('Boom.wav')
 
-
-# Load images of things to avoid
+# Load Images
 baddieImage1 = pygame.image.load('planet09.png')
 baddieImage2 = pygame.image.load('planet07.png')
 baddieImage3 = pygame.image.load('planet01.png')
 spaceshipImage = pygame.image.load('spaceship2.png')
-
-# Load images for superpowers
 starImage = pygame.image.load('starImage.png')
 starImage = pygame.transform.scale(starImage, (30, 30))
+heartImage = pygame.image.load('heartImage.png')
+heartImage = pygame.transform.scale(heartImage, (22, 22))
+backgroundImage = pygame.image.load('backgroundsky.png').convert()
+backgroundImage = pygame.transform.scale(backgroundImage, (WINDOWWIDTH, WINDOWHEIGHT))
+pausedImage = pygame.image.load('pausedImage.png').convert()
+pausedImage = pygame.transform.scale(pausedImage, (WINDOWWIDTH, WINDOWHEIGHT))
 
-# Define character images for different colors
+# Load Explosion Frames
+explosion_frames = [pygame.image.load(f'explosion0{i}.png').convert_alpha() for i in range(9)]
+
+# Characters
 character_Blue = [
     pygame.image.load("alienBlue.png"),
-    pygame.image.load("character_B_damage0.png"),  # 3 lives
-    pygame.image.load("character_B_damage1.png"),  # 2 lives
-    pygame.image.load("character_B_damage2.png")   # 1 life
+    pygame.image.load("character_B_damage0.png"),
+    pygame.image.load("character_B_damage1.png"),
+    pygame.image.load("character_B_damage2.png")
 ]
 
 character_Green = [
     pygame.image.load("alienGreen.png"),
-    pygame.image.load("character_G_damage0.png"),  # 3 lives
-    pygame.image.load("character_G_damage1.png"),  # 2 lives
-    pygame.image.load("character_G_damage2.png")   # 1 life
+    pygame.image.load("character_G_damage0.png"),
+    pygame.image.load("character_G_damage1.png"),
+    pygame.image.load("character_G_damage2.png")
 ]
 
 character_Pink = [
     pygame.image.load("alienPink.png"),
-    pygame.image.load("character_P_damage0.png"),  # 3 lives
-    pygame.image.load("character_P_damage1.png"),  # 2 lives
-    pygame.image.load("character_P_damage2.png")   # 1 life
+    pygame.image.load("character_P_damage0.png"),
+    pygame.image.load("character_P_damage1.png"),
+    pygame.image.load("character_P_damage2.png")
 ]
 
 character_Yellow = [
     pygame.image.load("alienYellow.png"),
-    pygame.image.load("character_Y_damage0.png"),  # 3 lives
-    pygame.image.load("character_Y_damage1.png"),  # 2 lives
-    pygame.image.load("character_Y_damage2.png")   # 1 life
+    pygame.image.load("character_Y_damage0.png"),
+    pygame.image.load("character_Y_damage1.png"),
+    pygame.image.load("character_Y_damage2.png")
 ]
 
-# Group all characters into one variable
 character_images = [character_Blue, character_Green, character_Pink, character_Yellow]
 
-#Load image of heart
-heartImage = pygame.image.load('heartImage.png')  # Load the heart image
-heartImage = pygame.transform.scale(heartImage, (22, 22))  # Adjust size if needed
+# Classes
+class Game:
+    def __init__(self):
+        self.windowSurface = windowSurface
+        self.FPS = FPS_INITIAL
+        self.mainClock = mainClock
+        self.topScore = 0
+        self.paused = False
+        self.background_x1 = 0
+        self.background_x2 = WINDOWWIDTH
+        self.scroll_speed = 2
+        self.playing_explosion = False
+        self.explosion_x = 0
+        self.explosion_y = 0
+        self.explosion_frames = explosion_frames
+        self.current_explosion_frame = 0
+        self.explosion_animation_speed = 5
+        self.character_images = character_images
+        self.selected_character_images = []
+        self.player = None
+        self.baddies = []
+        self.bullets = []
+        self.score = 0
+        self.lives = 3
+        self.nb_baddies_destroyed = 0
+        self.baddieAddCounter = 0
+        self.reverseCheat = False
+        self.slowCheat = False
+        self.star_counter = 0
+        self.starRect = None
+        self.star_active = False
+        self.star_effect_counter = 0
+        self.star_speed = -3  # Added star_speed attribute
+        self.load_assets()
+        self.first_run = True
+        self.is_playing = False 
+    
+    def load_assets(self):
+        # Load all required assets
+        pass  # Assets are already loaded globally
+    
+    def terminate(self):
+        pygame.quit()
+        sys.exit()
+    
+    def run(self):
+        if self.first_run:
+            self.show_start_screen()
+            self.choose_character()
+            self.first_run = False  # Set to False after first run
+        self.game_loop()
+    
+    def show_start_screen(self):
+        self.windowSurface.fill(BACKGROUNDCOLOR)
+        drawText('Press a key to start', pygame.font.Font('gameFont.ttf', 40), self.windowSurface,
+                 (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 40).size('Press a key to start.')[0]) // 2,
+                 (WINDOWHEIGHT / 3) + 50)
+        drawText('Press R to see rules', pygame.font.Font('gameFont.ttf', 25), self.windowSurface,
+                 (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size('Press R to see rules')[0]) // 2,
+                 (WINDOWHEIGHT / 3) + 150)
+        pygame.display.update()
+        waitForPlayerToPressKey(self)
+    
+    def choose_character(self):
+        character_image, player_name, selected_character = choose_character(
+            self.windowSurface, font, large_font, self.character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT
+        )
+        character_index = self.character_images.index(character_image)
+        self.selected_character_images = self.character_images[character_index]
+        self.player = Player(self.selected_character_images, selected_character)
+        display_the_countdown(self.windowSurface, large_font, self.player.image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT)
+    
+    def game_loop(self):
+        pygame.mouse.set_visible(False)  # Hide the mouse cursor during gameplay
+        pygame.mixer.music.play(-1, 0.0)
+        self.is_playing = True  # Set the flag to True when the game starts
+        while True:
+            if not self.paused:
+                self.score += 1
+            self.handle_events()
+            if self.paused:
+                self.show_paused_screen()
+                continue
+            self.update_game_state()
+            self.draw()
+            self.check_collisions()
+            self.mainClock.tick(self.FPS)
+            if self.lives <= 0:
+                break  # Exit the game loop when lives are depleted
+        self.is_playing = False  # Set the flag to False when the game ends
+        self.show_game_over_screen()
+        self.reset_game()
+        self.run()
+    
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                self.terminate()
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    self.terminate()
+                if event.key == K_p:
+                    self.paused = not self.paused
+                if not self.paused:
+                    if event.key == K_LEFT or event.key == K_a:
+                        self.player.moveLeft = True
+                        self.player.moveRight = False
+                    if event.key == K_RIGHT or event.key == K_d:
+                        self.player.moveRight = True
+                        self.player.moveLeft = False
+                    if event.key == K_UP or event.key == K_w:
+                        self.player.moveUp = True
+                        self.player.moveDown = False
+                    if event.key == K_DOWN or event.key == K_s:
+                        self.player.moveDown = True
+                        self.player.moveUp = False
+                    if event.key == K_f:
+                        self.player.shoot_bullet(self.bullets)
+                if event.key == K_r:
+                    pygame.mixer.music.stop()
+                    immortality_music.stop()
+                    display_rules()
+                    if game.is_playing:  # Restart the background music only if the game is running
+                        pygame.mixer.music.play()
+                    
+            elif event.type == KEYUP:
+                if event.key == K_LEFT or event.key == K_a:
+                    self.player.moveLeft = False
+                if event.key == K_RIGHT or event.key == K_d:
+                    self.player.moveRight = False
+                if event.key == K_UP or event.key == K_w:
+                    self.player.moveUp = False
+                if event.key == K_DOWN or event.key == K_s:
+                    self.player.moveDown = False
+            elif event.type == MOUSEMOTION:
+                self.player.rect.centery = event.pos[1]
+    
+    def show_paused_screen(self):
+        self.windowSurface.blit(pausedImage, (0, 0))
+        paused_text = 'Paused, press P to continue playing' 
+        paused_x = (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size(paused_text)[0]) // 2
+        drawText(paused_text, pygame.font.Font('gameFont.ttf', 25), self.windowSurface, paused_x, WINDOWHEIGHT//3)
+        immortality_music.stop()
+        pygame.mixer.music.play()
+        pygame.display.update()
+    
+    def update_game_state(self):
+        # Background scrolling
+        self.background_x1 -= self.scroll_speed
+        self.background_x2 -= self.scroll_speed
+        if self.background_x1 <= -WINDOWWIDTH:
+            self.background_x1 = WINDOWWIDTH
+        if self.background_x2 <= -WINDOWWIDTH:
+            self.background_x2 = WINDOWWIDTH
+        
+        # Projectiles update
+        for bullet in self.bullets[:]:
+            bullet['rect'].x += bullet['speed']
+            if bullet['rect'].left > WINDOWWIDTH:
+                self.bullets.remove(bullet)
+        
+        # Baddies spawn
+        self.spawn_baddies()
+        
+        # Star logic
+        self.update_star()
+        
+        # Move player
+        self.player.update_position()
+        
+        # Move baddies
+        for baddie in self.baddies:
+            baddie.update_position()
+            if baddie.rect.right < -baddie.size: #
+                self.baddies.remove(baddie)
+    
+    def spawn_baddies(self):
+        if not self.reverseCheat and not self.slowCheat:
+            self.baddieAddCounter += 1
+        if self.baddieAddCounter == ADDNEWBADDIERATE:
+            self.baddieAddCounter = 0
+            baddie = Baddie()
+            self.baddies.append(baddie)
+        # Add spaceships at certain scores
+        if self.score % 100 == 0:
+            spaceship = Spaceship()
+            self.baddies.append(spaceship)
+    
+    def update_star(self):
+        self.star_counter += 1
+        STAR_APPEAR_FRAMES = FPS_INITIAL * 10
+        if self.star_counter >= STAR_APPEAR_FRAMES:
+            self.starRect = pygame.Rect(
+                WINDOWWIDTH,  # Start at the right edge
+                random.randint(0, WINDOWHEIGHT - 30),
+                30, 30
+            )
+            self.star_counter = 0
+        if self.starRect:
+            # Move the star to the left
+            self.starRect.x += self.star_speed
+            if self.starRect.right < 0:
+                self.starRect = None  # Remove the star when it goes off-screen
+        if self.starRect and self.player.rect.colliderect(self.starRect):
+            self.star_active = True
+            self.star_effect_counter = FPS_INITIAL * 10
+            self.starRect = None
+        if self.star_active:
+            self.star_effect_counter -= 1
+            if self.star_effect_counter <= 0:
+                self.star_active = False
+        self.FPS = get_game_speed(self.score)
+        if self.star_active:
+            self.FPS *= 3  # STAR_SPEED_MULTIPLIER
+            immortality_music.play()
+        else:
+            immortality_music.stop()
+    
+    def draw(self):
+        self.windowSurface.blit(backgroundImage, (self.background_x1, 0))
+        self.windowSurface.blit(backgroundImage, (self.background_x2, 0))
+        drawTextWhite('Score: %s' % (self.score), font, self.windowSurface, 10, 0)
+        drawTextWhite('Top Score: %s' % (self.topScore), font, self.windowSurface, 10, 40)
+        drawTextWhite(f'Number of baddies destroyed: {self.nb_baddies_destroyed}', font, self.windowSurface, 10, 80)
+        draw_hearts(self.lives, font, self.windowSurface, 10, 120)
+        self.windowSurface.blit(self.player.image, self.player.rect)
+        for baddie in self.baddies:
+            self.windowSurface.blit(baddie.surface, baddie.rect)
+        if self.starRect:
+            self.windowSurface.blit(starImage, self.starRect)
+        for bullet in self.bullets:
+            pygame.draw.rect(self.windowSurface, bullet['color'], bullet['rect'])
+        if self.star_active:
+            immortality_seconds = self.star_effect_counter // FPS_INITIAL
+            drawTextWhite(f"Immortality: {immortality_seconds}", font, self.windowSurface, 10, 160)
+        pygame.display.update()
+    
+    def check_collisions(self):
+        # Bullet collisions
+        for bullet in self.bullets[:]:
+            for baddie in self.baddies[:]:
+                if bullet['rect'].colliderect(baddie.rect):
+                    baddie.health -= 1
+                    self.bullets.remove(bullet)
+                    if baddie.health <= 0:
+                        self.baddies.remove(baddie)
+                        self.nb_baddies_destroyed += 1
+                        baddie_shoot_sound.play()
+                        if self.nb_baddies_destroyed == 30:
+                            self.lives += 1 #adds a life when you've killed 30 baddies
+                    break
+        # Player collisions
+        if not self.star_active:
+            for baddie in self.baddies[:]:
+                if baddie.type == 'spaceship':
+                    offset = (baddie.rect.x - self.player.rect.x, baddie.rect.y - self.player.rect.y)
+                    if self.player.mask.overlap(baddie.mask, offset): # Pixel-perfect collision for spaceship
+                        pygame.mixer.music.stop()
+                        baddie_hit_sound.play()
+                        self.lives -= baddie.damage
+                        self.baddies.remove(baddie)
+                        self.playing_explosion = True
+                        self.explosion_x = baddie.rect.centerx
+                        self.explosion_y = baddie.rect.centery
+                        self.explosion_size = baddie.size*1.3  # Set explosion size to 1.3 spaceship size
+                        while self.playing_explosion:
+                            self.play_explosion()
+                        if self.lives <= 0:
+                            break
+                        else:
+                            self.player.update_image(4 - self.lives)
+                            self.player.rect.topleft = (20, WINDOWHEIGHT / 2)
+                            self.baddies.clear()
+                            pygame.time.wait(1000)
+                        pygame.mixer.music.play()
+    
+                else:  # Regular baddies (asteroids)
+                    if self.player.rect.colliderect(baddie.rect):
+                    # Handle regular baddie collision (same logic as before)
+                        pygame.mixer.music.stop()
+                        baddie_hit_sound.play()
+                        self.lives -= baddie.damage
+                        self.baddies.remove(baddie)
+                        self.playing_explosion = True
+                        self.explosion_x = baddie.rect.centerx
+                        self.explosion_y = baddie.rect.centery
+                        self.explosion_size = baddie.size*2  # Set explosion size to twice the baddie size
+                        while self.playing_explosion:
+                            self.play_explosion()
+                        if self.lives <= 0:
+                            break
+                        else:
+                            self.player.update_image(4 - self.lives)
+                            self.player.rect.topleft = (20, WINDOWHEIGHT / 2)
+                            self.baddies.clear()
+                            pygame.time.wait(1000)
+                        pygame.mixer.music.play()
 
-# Load background image
-backgroundImage = pygame.image.load('backgroundsky.png').convert()
-backgroundImage = pygame.transform.scale(backgroundImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
-pausedImage = pygame.image.load('pausedImage.png').convert()
-pausedImage = pygame.transform.scale(pausedImage, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize the image
 
-# Explosion video
-explosion_video = cv2.VideoCapture('explosion22-unscreen.gif')
-playing_explosion = False  # Flag to indicate if the explosion is playing
-explosion_x = 0  # X coordinate for the explosion
-explosion_y = 0  # Y coordinate for the explosion
+    
+    def play_explosion(self):
+        for img in self.explosion_frames:
+            frame_surface = pygame.transform.scale(img, (self.explosion_size, self.explosion_size))
+            frame_rect = frame_surface.get_rect(center=(self.explosion_x, self.explosion_y))
+            self.windowSurface.blit(frame_surface, frame_rect)
+            pygame.display.update()
+            self.mainClock.tick(self.FPS)
+        self.playing_explosion = False
+    
+    def show_game_over_screen(self):
+        pygame.mixer.music.stop()
+        gameOverSound.play()
 
-def play_explosion(video, x, y):
-    global playing_explosion, explosion_x, explosion_y
-    success, frame = video.read()
-    if success:
-        frame = cv2.resize(frame, (75, 75), interpolation=cv2.INTER_AREA) # Resize the frame to 75x75pixels
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Convert the frame from BGR to RGB
-        frame_surface = pygame.surfarray.make_surface(frame) # Convert the resized frame to a Pygame surface
+        # Load and display the explosion image
+        explosion_image = pygame.image.load("explosion08.png")
+        original_width, original_height = explosion_image.get_size()
+        scaled_width, scaled_height = original_width * 2, original_height * 2
+        explosion_image = pygame.transform.scale(explosion_image, (scaled_width, scaled_height))
 
-        # Center the explosion on the baddie
-        frame_rect = frame_surface.get_rect()
-        frame_rect.center = (x, y)
+        # Center the image on the screen
+        image_rect = explosion_image.get_rect(center=(WINDOWWIDTH // 2, WINDOWHEIGHT // 2))
+        self.windowSurface.blit(explosion_image, image_rect.topleft)
 
-        windowSurface.blit(frame_surface, frame_rect)
-    else:
-        playing_explosion = False
-        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-#draws hearts on the screen based on remaining lives
-def draw_hearts(lives, font, surface, x, y):
-    text = "Lives: "
-    textobj = font.render(text, True, (255, 255, 255))
+        # Display "GAME OVER" and "Press a key to play again" text
+        game_over_text = 'GAME OVER'
+        retry_text = 'Press a key to play again'
+        game_over_x = (WINDOWWIDTH - game_over_font.size(game_over_text)[0]) // 2
+        retry_x = (WINDOWWIDTH - retry_font.size(retry_text)[0]) // 2  
+        drawTextWhite(game_over_text, game_over_font, self.windowSurface, game_over_x, (WINDOWHEIGHT / 3))
+        drawTextWhite(retry_text, retry_font, self.windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
+
+        pygame.display.update()
+        pygame.time.wait(2000)
+        
+        # Check if the player has beaten the top score
+        if self.score > self.topScore:
+            self.topScore = self.score
+            congrats_y = (WINDOWHEIGHT / 3) + 250
+            for text in ["Congratulations,", "You've beaten your record!", f"Now your top score is {self.topScore}"]:
+                drawText(text, small_font, self.windowSurface, (WINDOWWIDTH - small_font.size(text)[0]) / 2, congrats_y)
+                congrats_y += 50
+            pygame.display.update()
+
+        self.FPS = FPS_INITIAL
+        waitForPlayerToPressKey(self)
+        gameOverSound.stop()
+
+    
+    def reset_game(self):
+        self.baddies.clear()
+        self.bullets.clear()
+        self.score = 0
+        self.lives = 3
+        self.nb_baddies_destroyed = 0
+        self.baddieAddCounter = 0
+        self.star_counter = 0
+        self.starRect = None
+        self.star_active = False
+        self.star_effect_counter = 0
+        self.player.reset()
+        
+class Player:
+    def __init__(self, images, selected_character):
+        self.images = images
+        self.selected_character = selected_character
+        self.image = self.images[1]
+        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (20, WINDOWHEIGHT / 2)
+        self.moveLeft = False
+        self.moveRight = False
+        self.moveUp = False
+        self.moveDown = False
+        self.mask = pygame.mask.from_surface(self.image)  # Create mask
+    
+    def update_position(self):
+        if self.moveUp and self.rect.top > 0:
+            self.rect.move_ip(0, -1 * PLAYERMOVERATE)
+        if self.moveDown and self.rect.bottom < WINDOWHEIGHT:
+            self.rect.move_ip(0, PLAYERMOVERATE)
+    
+    def shoot_bullet(self, bullets):
+        bullet_color = BULLET_COLOR.get(self.selected_character, (255, 0, 0))  # Get color based on selected character
+        bullet = {
+            'rect': pygame.Rect(self.rect.right, self.rect.centery - BULLET_SIZE[1] // 2, BULLET_SIZE[0], BULLET_SIZE[1]),
+            'speed': BULLET_SPEED,
+            'color': bullet_color
+        }
+        bullets.append(bullet)
+    
+    def update_image(self, index):
+        self.image = self.images[index]
+        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.mask = pygame.mask.from_surface(self.image)  # Update mask
+    
+    def reset(self):
+        self.image = self.images[1]
+        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.rect.topleft = (20, WINDOWHEIGHT / 2)
+        self.moveLeft = self.moveRight = self.moveUp = self.moveDown = False
+        self.mask = pygame.mask.from_surface(self.image) # Update mask
+
+class Baddie:
+    def __init__(self):
+        self.size = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
+        prob = random.randint(1, 100)
+        if prob <= 50:
+            self.type = 'asteroid'
+            self.image = baddieImage1
+            self.health = 1
+            self.damage = 1
+        elif prob <= 80:
+            self.type = 'strong_asteroid'
+            self.image = baddieImage2
+            self.health = 2
+            self.damage = 1
+        else:
+            self.type = 'super_strong_asteroid'
+            self.image = baddieImage3
+            self.health = 3
+            self.damage = 1
+        self.surface = pygame.transform.scale(self.image, (self.size, self.size))
+        self.rect = self.surface.get_rect()
+        self.rect.x = WINDOWWIDTH + self.size
+        self.rect.y = random.randint(0, WINDOWHEIGHT - self.size)
+        self.speed = -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED)
+    
+    def update_position(self):
+        self.rect.move_ip(self.speed, 0)
+
+class Spaceship(Baddie):
+    def __init__(self):
+        super().__init__()
+        self.size = random.randint(SPACEMINSIZE, SPACEMAXSIZE)
+        self.type = 'spaceship'
+        self.image = spaceshipImage
+        self.health = 5
+        self.damage = 2
+        self.surface = pygame.transform.scale(self.image, (self.size, self.size))
+        self.mask = pygame.mask.from_surface(self.surface)  # Create mask after scaling
+        self.rect = self.surface.get_rect()  # Update rect *after* scaling and creating mask
+        self.reset_position()  # Reset the position based on the new size
+    
+    def reset_position(self): # Define reset_position within Spaceship
+        self.rect.x = WINDOWWIDTH + self.size
+        self.rect.y = random.randint(0, WINDOWHEIGHT - self.size)
+        self.speed = -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED)
+    
+
+# Utility functions
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+def waitForPlayerToPressKey(game):
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                game.terminate()
+            if event.type == KEYDOWN:
+                if event.key == K_r:
+                    display_rules()
+                    if game.is_playing:  # Restart the background music only if the game is running
+                        pygame.mixer.music.play()
+                if event.key == K_ESCAPE:
+                    game.terminate()
+                return
+
+def drawText(text, font, surface, x, y):
+    textobj = font.render(text, True, BLACK)
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-    heart_spacing = 30  # Adjust spacing between hearts
-    heart_y_offset = 18  # Adjust this value to fine-tune vertical alignment
+def drawTextWhite(text, font, surface, x, y):
+    textobj = font.render(text, True, WHITE)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+
+def draw_hearts(lives, font, surface, x, y):
+    text = "Lives: "
+    textobj = font.render(text, True, WHITE)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
+    heart_spacing = 30
+    heart_y_offset = 18
     for i in range(lives):
-        windowSurface.blit(heartImage, (x + textrect.width + (i * heart_spacing), y + heart_y_offset)) # Position hearts relative to text
+        surface.blit(heartImage, (x + textrect.width + (i * heart_spacing), y + heart_y_offset))
 
-# Show the "Start" screen
-windowSurface.fill(BACKGROUNDCOLOR)
-drawText('Press a key to start', pygame.font.Font('gameFont.ttf', 40), windowSurface,
-         (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 40).size('Press a key to start.')[0]) // 2,
-         (WINDOWHEIGHT / 3) + 50)
-drawText('Press R to see rules', pygame.font.Font('gameFont.ttf', 25), windowSurface,
-         (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size('Press r to see rules')[0]) // 2,
-         (WINDOWHEIGHT / 3) + 150)
-pygame.display.update()
-waitForPlayerToPressKey()
-
-# Using the functions 
-# Choose character
-character_image, player_name, selected_character = choose_character(windowSurface, font, large_font, character_images, WHITE, BLACK, WINDOWWIDTH, WINDOWHEIGHT)
-character_index = character_images.index(character_image) # The index of the chosen colour, this is the result of `selected_character`.
-selected_character_images = character_images[character_index]  # This is a list of images of the character
-playerImage = selected_character_images[0]  # The initial image of the character with 3 lives (damage0)
-playerRect = playerImage.get_rect()
-
-display_the_countdown(windowSurface, large_font, playerImage, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT) # Display the countdown to the start of the game
-pygame.mouse.set_visible(False)  # Hide the mouse cursor once the game has started
-  
-
-# Indicate the speed of play according to the score
-def get_game_speed(score):
-    if score >= 500:
-        return FPS_initiale * 1.5
-    elif score >= 1000:
-        return FPS_initiale * 2
-    elif score >= 2500:
-        return FPS_initiale * 3
-    else:
-        return FPS_initiale
-    
-# Game loop
-topScore = 0
-FPS = FPS_initiale
-while True:
-    baddies = []
-    bullets = []
-    score = 0
-    lives = 3  # Number of lives at start
-    playerImage = selected_character_images[1]
-    playerImage = pygame.transform.scale(playerImage,(70,70))
-    playerRect.topleft = (20, WINDOWHEIGHT / 2)
-    moveLeft = moveRight = moveUp = moveDown = False
-    reverseCheat = slowCheat = False
-    baddieAddCounter = 0
-    nb_baddies_destroyed = 0
-    pygame.mixer.music.play(-1, 0.0)
-
-    # Star variables
-    star_counter = 0
-    starRect = None
-    star_active = False
-    star_effect_counter = 0
-
-    # Game loop
-    while True: 
-        if not paused:
-            score += 1
-
+def display_rules():
+    pygame.mixer.music.stop()  # Stop the background music
+    image = pygame.image.load("Rules_of_game.png")
+    image = pygame.transform.scale(image, (WINDOWWIDTH, WINDOWHEIGHT))
+    screen_copy = windowSurface.copy()
+    screen_copy.blit(image, (0, 0))
+    windowSurface.blit(screen_copy, (0, 0))
+    pygame.display.flip()
+    while True:
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == pygame.QUIT:
                 terminate()
+            elif event.type == pygame.KEYDOWN:
+                return
 
-            if event.type == KEYDOWN:
-                if event.key == K_r: # Pressing 'r' shows the rules of the game
-                    pygame.mixer.music.stop() # Stop the background music
-                    immortality_music.stop()  # Stop the immortality music if it is on
-                    display_rules()
-                if event.key == K_f: # Pressing 'f' to fire the baddies
-                    bullet_color = BULLET_COLOR.get(selected_character, (255, 0, 0)) # default to red if no match
-                    shoot_bullet(playerRect, bullet_color)  # Pass bullet color here
+def get_game_speed(score):
+    if score >= 2500:
+        return FPS_INITIAL * 3
+    elif score >= 1000:
+        return FPS_INITIAL * 2
+    elif score >= 500:
+        return FPS_INITIAL * 1.5
+    else:
+        return FPS_INITIAL
 
-
-                if event.key == K_ESCAPE:  # Pressing ESC quits
-                    terminate()
-                if event.key == K_p:  # Pressing 'p' pauses/unpauses the game
-                    paused = not paused
-                if not paused:
-                    if event.key == K_LEFT or event.key == K_a:
-                        moveRight = False
-                        moveLeft = True
-                    if event.key == K_RIGHT or event.key == K_d:
-                        moveLeft = False
-                        moveRight = True
-                    if event.key == K_UP or event.key == K_w:
-                        moveDown = False
-                        moveUp = True
-                    if event.key == K_DOWN or event.key == K_s:
-                        moveUp = False
-                        moveDown = True
-                        
-            if event.type == KEYUP:
-                if not paused: 
-                    if event.key == K_LEFT or event.key == K_a:
-                        moveLeft = False
-                    if event.key == K_RIGHT or event.key == K_d:
-                        moveRight = False
-                    if event.key == K_UP or event.key == K_w:
-                        moveUp = False
-                    if event.key == K_DOWN or event.key == K_s:
-                        moveDown = False
-
-            if event.type == MOUSEMOTION:
-                playerRect.centery = event.pos[1]
-
-            if event.type == MOUSEBUTTONDOWN:
-                mouse_pos = event.pos
-                if 500 <= mouse_pos[0] <= 580 and 10 <= mouse_pos[1] <= 60: 
-                    paused = not paused
-
-        if paused:
-            windowSurface.blit(pausedImage, (0, 0))
-            paused_text = 'Paused, press P to continue playing' 
-            paused_x = (WINDOWWIDTH - pygame.font.Font('gameFont.ttf', 25).size(paused_text)[0]) // 2
-            drawText(paused_text, pygame.font.Font('gameFont.ttf', 25), windowSurface, paused_x, WINDOWHEIGHT//3) #when paused, the music stops
-            #when paused, the music stops
-            immortality_music.stop()
-            pygame.mixer.music.play()
-            pygame.display.update()
-            continue
-       
-        
-        #Backrgound scrolling
-        background_x1 -= scroll_speed
-        background_x2 -= scroll_speed
-        if background_x1 <= -WINDOWWIDTH:
-            background_x1 = WINDOWWIDTH
-        if background_x2 <= -WINDOWWIDTH:
-            background_x2 = WINDOWWIDTH
-        # Draw the two background images that will follow each other ad infinitum
-        screen.blit(backgroundImage, (background_x1, 0))
-        screen.blit(backgroundImage, (background_x2, 0))
-        
-        # Projectiles update
-        for bullet in bullets[:]:
-            bullet['rect'].x += bullet['speed']  # Moves the projectile
-            if bullet['rect'].left > WINDOWWIDTH:  # Removes off-screen projectiles
-                bullets.remove(bullet)
-
-        # Checking for collisions between projectiles and baddies
-        for bullet in bullets[:]:
-            for baddie in baddies[:]:
-                if bullet['rect'].colliderect(baddie['rect']):
-                    baddie['health'] -= 1  # Reduces baddie life
-                    bullets.remove(bullet)  # Removes the projectile
-                    break
-                if baddie['health'] <= 0:  # Deletes the baddie if it has no life left
-                    baddies.remove(baddie)
-                    nb_baddies_destroyed += 1
-                    baddie_shoot_sound.play()
-                    if nb_baddies_destroyed == 30: #when you hit 30 baddies you get an extra life
-                        lives += 1
-                    break
-
-
-        # Add new baddies at the top of the screen, if needed
-        if not reverseCheat and not slowCheat:
-            baddieAddCounter += 1
-        if baddieAddCounter == ADDNEWBADDIERATE:
-            baddieAddCounter = 0
-            baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            prob = random.randint(1, 100)  # Generates a number between 1 and 100
-            if prob <= 50:  # 50% probability
-                baddieType = 'asteroid'
-                baddieImage = baddieImage1
-                baddieHealth = 1
-            elif prob <= 80:  # 30% probability (50% + 30% = 80%)
-                baddieType = 'strong_asteroid'
-                baddieImage = baddieImage2
-                baddieHealth = 2
-            else:  # 20% probability
-                baddieType = 'super_strong_asteroid'
-                baddieImage = baddieImage3 
-                baddieHealth = 3  #  Higher hit points for the super-strong type
-
-        # Create a new baddie
-            newBaddie = {
-                'rect': pygame.Rect(
-                    WINDOWWIDTH + baddieSize,  # Start just off-screen to the right
-                    random.randint(0, WINDOWHEIGHT - baddieSize),  # Random vertical position
-                    baddieSize,
-                    baddieSize
-                ),
-                'speed': -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                'type': baddieType,
-                'health': baddieHealth
-            }
-            baddies.append(newBaddie)
-            
-
-            for x in range(1, 220):
-                if score == 100 * x:
-                    baddieSize = random.randint(SPACEMINSIZE, SPACEMAXSIZE)
-                    newBaddie = {
-                        'rect': pygame.Rect(WINDOWWIDTH + baddieSize, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
-                        'speed': -random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                        'surface': pygame.transform.scale(spaceshipImage, (baddieSize, baddieSize)),
-                        'type': 'spaceship',  # Type of baddie
-                        'health' : 5  # Gives 5 lives to each spaceship
-                    }
-                    baddies.append(newBaddie)
-                    
-        # Star appearance logic
-        star_counter += 1
-        if star_counter >= STAR_APPEAR_FRAMES:
-            starRect = pygame.Rect(random.randint(0, WINDOWWIDTH - 30),
-                                   random.randint(0, WINDOWHEIGHT - 30), 30, 30)
-            star_counter = 0
-
-        # Apply star speed boost
-        if star_active:
-            pygame.mixer.music.stop()
-            immortality_music.play()  # Play immortality music 
-            pygame.mixer.music.play()
-            FPS = get_game_speed(score) * STAR_SPEED_MULTIPLIER
-            
-        else:
-            FPS = get_game_speed(score)
-
-        # Move the player around
-        if moveUp and playerRect.top > 0:
-            playerRect.move_ip(0, -1 * PLAYERMOVERATE)
-        if moveDown and playerRect.bottom < WINDOWHEIGHT:
-            playerRect.move_ip(0, PLAYERMOVERATE)
-
-        # Move the baddies
-        for b in baddies:
-            if not reverseCheat and not slowCheat:
-                b['rect'].move_ip(b['speed'], 0)
-            elif reverseCheat:
-                b['rect'].move_ip(-5)
-            elif slowCheat:
-                b['rect'].move_ip(0, 1)
-
-        # Delete baddies that have fallen past the bottom
-        for b in baddies[:]:
-            if b['rect'].top > WINDOWHEIGHT:
-                baddies.remove(b)
-
-        # Update star position
-        if starRect:
-            update_star(starRect)    
-
-        # Check for star collision
-        if starRect and playerRect.colliderect(starRect):
-            star_active = True
-            star_effect_counter = STAR_EFFECT_FRAMES
-            starRect = None
-
-        # Reduce star effect counter
-        if star_active:
-            star_effect_counter -= 1
-            if star_effect_counter <= 0:
-                star_active = False
-        
-        # Draw the game world on the window  
-        #windowSurface.blit(backgroundImage, (0, 0))  
-    
-        drawTextWhite('Score: %s' % (score), font, windowSurface, 10, 0)
-        drawTextWhite('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
-        drawTextWhite(f'Number of baddies destroyed: {nb_baddies_destroyed}',font, windowSurface, 10, 80)
-        draw_hearts(lives, font, windowSurface, 10, 120)  
-        windowSurface.blit(playerImage, playerRect)
-    
-        # Draw each baddie
-        for b in baddies:
-            windowSurface.blit(b['surface'], b['rect'])
-        if starRect:
-            windowSurface.blit(starImage, starRect)
-            
-        # Drawing bullets
-        for bullet in bullets:
-            pygame.draw.rect(windowSurface, bullet['color'], bullet['rect'])
-
-        # Display immortality timer
-        if star_active:
-            immortality_seconds = star_effect_counter // FPS_initiale
-            drawTextWhite(f"Immortality: {immortality_seconds}", font, windowSurface, 10, 160)
-
-        pygame.display.update()
-
-        # Play explosion video if it's active
-        if playing_explosion:
-            play_explosion(explosion_video, explosion_x + 20, explosion_y + 20)  # Offset explosion position
-
-        pygame.display.update()
-
-        # Check if any of the baddies have hit the player
-        if not star_active:
-            collided_baddie = playerHasHitBaddie(playerRect, playerImage, baddies)  
-            immortality_music.stop()  # Stop the immortality music when the effect ends
-            
-            if collided_baddie:
-                pygame.mixer.music.stop() # Stop the game music
-                baddie_hit_sound.play()   # Play the explosion sound
-
-                # Decrease lives
-                if collided_baddie['type'] == 'asteroid':
-                    lives -= 1
-                elif collided_baddie['type'] == 'strong_asteroid':
-                    lives -= 1
-                elif collided_baddie['type'] == 'super_strong_asteroid':
-                    lives -= 1
-                elif collided_baddie['type'] == 'spaceship':
-                    lives -= 2
-
-                # Start playing the explosion (either small or fullscreen)
-                playing_explosion = True
-                if lives <= 0:  # Fullscreen explosion on game over
-                    explosion_x = WINDOWWIDTH // 2
-                    explosion_y = WINDOWHEIGHT // 2
-                    explosion_size = (WINDOWWIDTH, WINDOWHEIGHT)  # Fullscreen size
-                else:  # Small explosion otherwise
-                    explosion_x = collided_baddie['rect'].centerx + 20
-                    explosion_y = collided_baddie['rect'].centery + 20
-                    explosion_size = (75, 75)  # Small explosion size
-
-                while playing_explosion:
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            terminate()
-
-                    success, frame = explosion_video.read()
-                    if success:
-                        frame = cv2.resize(frame, explosion_size, interpolation=cv2.INTER_AREA)
-                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                        frame_surface = pygame.surfarray.make_surface(frame)
-                        windowSurface.blit(frame_surface, (explosion_x - explosion_size[0] // 2, explosion_y - explosion_size[1] // 2))  # Center the explosion
-                    else:
-                        playing_explosion = False
-                        explosion_video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
-                    pygame.display.update()
-                    mainClock.tick(FPS)
-            
-                if lives <= 0:  # If no lives left, the game ends                 
-                    break
-                else:
-                    playerImage = selected_character_images[4-lives]
-                    playerImage = pygame.transform.scale(playerImage,(70,70))
-                    playerRect.topleft = (20, WINDOWHEIGHT / 2)  # Reset player position
-                    baddies = []  # Clear all baddies on screen
-                    
-                    pygame.time.wait(1000)  # Pause for a second before continuing
-                
-                pygame.mixer.music.play()
-
-        mainClock.tick(FPS)
-
-    
-    # Stop the game and show the "Game Over" screen
-    pygame.mixer.music.stop()
-    gameOverSound.play()
-    
-    game_over_text = 'GAME OVER'
-    retry_text = 'Press a key to play again'
-
-    # Calculating positions to centre text
-    game_over_x = (WINDOWWIDTH - game_over_font.size(game_over_text)[0]) // 2
-    retry_x = (WINDOWWIDTH - retry_font.size(retry_text)[0]) // 2  
-
-    #  Display the text ‘GAME OVER’ centred
-    drawTextWhite(game_over_text, game_over_font, windowSurface, game_over_x, (WINDOWHEIGHT / 3))
-    drawTextWhite(retry_text, retry_font, windowSurface, retry_x, (WINDOWHEIGHT / 3) + 100)
-    pygame.display.update()  # Updates the display to show the message
-    pygame.time.wait(2000)  # Wait 2 seconds before continuing
-    
-    # Display the congratulatory message if we beat our score
-    if score > topScore:
-        topScore = score  # Update top score
-        congrats_y = (WINDOWHEIGHT / 3) + 250
-        for text in [f"Congratulations {player_name},", "You've beaten your record!", f"Now your top score is {topScore}"]:
-            drawText(text, small_font, windowSurface, (WINDOWWIDTH - small_font.size(text)[0]) / 2, congrats_y)
-            congrats_y += 50  # Increment y-position for next line
-    
-    pygame.display.update()
-    FPS = FPS_initiale # reset the initial value
-
-    waitForPlayerToPressKey()
-
-    gameOverSound.stop()
+# Start the game
+if __name__ == '__main__':
+    game = Game()
+    game.run()
