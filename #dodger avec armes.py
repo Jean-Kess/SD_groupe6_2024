@@ -704,7 +704,7 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
                         weapons_question = True
                         while weapons_question:
                             pygame.draw.rect(windowSurface, Constants.WHITE, (0, Constants.WINDOWHEIGHT / 3 + 300, Constants.WINDOWWIDTH, 200))
-                            drawText('Do you want to play with weapons?', Fonts.small_font, windowSurface,
+                            drawText('Do you want to play with a weapon?', Fonts.small_font, windowSurface,
                                      Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT / 3) + 350, center=True)
                             drawText('Press Y for Yes, N for No', Fonts.small_font, windowSurface,
                                      Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT / 3) + 400, center=True)
@@ -740,7 +740,7 @@ def choose_character(windowSurface, font, large_font, character_images, WHITE, B
                         weapons_question = True
                         while weapons_question:
                             pygame.draw.rect(windowSurface, Constants.WHITE, (0, Constants.WINDOWHEIGHT / 3 + 300, Constants.WINDOWWIDTH, 200))
-                            drawText('Do you want to play with weapons?', Fonts.small_font, windowSurface,
+                            drawText('Do you want to play with a weapon?', Fonts.small_font, windowSurface,
                                      Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT / 3) + 350, center=True)
                             drawText('Press Y for Yes, N for No', Fonts.small_font, windowSurface,
                                      Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT / 3) + 400, center=True)
