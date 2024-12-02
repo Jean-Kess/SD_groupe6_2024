@@ -14,21 +14,20 @@ class Constants:
     WINDOWHEIGHT = 800                 # Height of the window
 
     # Colors
-    TEXTCOLOR = (255, 255, 255)        # White
-    BACKGROUNDCOLOR = (255, 255, 255)  # White
     WHITE = (255, 255, 255)            # White
     BLACK = (0, 0, 0)                  # Black
 
     # Game settings
+    MAX_NAME_LENGTH = 15               # Maximum length of the player's name
     FPS_INITIAL = 30                   # Initial FPS
-    SPACEMINSIZE = 150                 # Minimum space size
-    SPACEMAXSIZE = 250                 # Maximum space size
-    BADDIEMINSIZE = 15                 # Minimum baddie size
-    BADDIEMAXSIZE = 60                 # Maximum baddie size
-    BADDIEMINSPEED = 3                 # Minimum baddie speed
-    BADDIEMAXSPEED = 8                 # Maximum baddie speed
-    ADDNEWBADDIERATE = 15              # Rate of adding new baddies
-    PLAYERMOVERATE = 5                 # Player movement rate
+    SPACE_MIN_SIZE = 150               # Minimum space size
+    SPACE_MAX_SIZE = 250               # Maximum space size
+    BADDIE_MIN_SIZE = 15               # Minimum baddie size
+    BADDIE_MAX_SIZE = 60               # Maximum baddie size
+    BADDIE_MIN_SPEED = 3               # Minimum baddie speed
+    BADDIE_MAX_SPEED = 8               # Maximum baddie speed
+    ADD_NEW_BADDIE_RATE = 15           # Rate of adding new baddies
+    PLAYER_MOVE_RATE = 5               # Player movement rate
 
     # Bullet settings
     BULLET_SIZE = (10, 5)              # Bullet size
@@ -88,6 +87,7 @@ class Images:
     heartImage = None                 # image for the heart which signifies the number of lives
     backgroundImage = None            # Image for the background
     pausedImage = None                # Image for the paused screen
+    startImage = None                 # Image for the start screen
     explosion_frames = []             # List of explosion frames
     character_images = []             # List of character images
 
@@ -98,6 +98,9 @@ class Images:
         cls.baddieImage3 = pygame.image.load('planet01.png')             # Image for the third type of baddie (green and violet planet)
         cls.spaceshipImage = pygame.image.load('spaceship2.png')         # Image for the spaceship
         
+        cls.startImage = pygame.image.load('startImage.png').convert()  # Load the start image
+        cls.startImage = pygame.transform.scale(cls.startImage, (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))  # Resize the start image to fit the window
+
         cls.starImage = pygame.image.load('starImage.png')               # Image for the immrtality star
         cls.starImage = pygame.transform.scale(cls.starImage, (30, 30))  # Resize the star image to 30x30 pixels
         
@@ -220,7 +223,6 @@ class CharacterSelection:
         player_name = ""                                             # Initialize the player name
         entering_name = True                                         # Flag to check if the player is entering the name
         game_started = False                                         # Flag to check if the game has started
-        #character_rects = []                                        # List to hold the rectangles for character images
         with_weapons = False                                         # Initialize the with_weapons variable
 
         # Pre-calculate the positions of the characters that will be displayed when we have to make our character choice
@@ -228,32 +230,38 @@ class CharacterSelection:
         spacing = WINDOWWIDTH // (num_characters + 1)               # Calculate the spacing between characters
         y_position = WINDOWHEIGHT // 2                              # Calculate the y position for the characters images
         character_rects = []                                        # Initialize the list to hold character rectangles
+        margin = 10                                                 # Margin around the character image
 
         for i, img in enumerate(character_images):
-            x = spacing * (i + 1)                                  # Calculate the x position for the character image
-            img_rect = img[0].get_rect(center=(x, y_position))     # Create a rectangle for the character image
-            character_rects.append(img_rect)                       # Append the rectangle to the list
+            x = spacing * (i + 1)  # Calculate the x position for the character image
+            img_rect = img[0].get_rect(center=(x, y_position))  # Create a rectangle for the character image
+            img_rect.inflate_ip(margin, margin)  # Inflate the rectangle by the margin
+            character_rects.append(img_rect)  # Append the rectangle to the list
 
-        #  Define the rectangle of the confirmation button that validates our choice of character
-        confirm_button_rect = pygame.Rect(WINDOWWIDTH // 2 - 75, 600, 150, 50)  #  Adjust the positions
-
+    
         while not game_started:
-            windowSurface.fill(Constants.WHITE)                    # Fill the window with white color
-            GameUtils.drawText("What's your name?", large_font, windowSurface, WINDOWWIDTH // 2, 50, center=True)                # Draw the prompt for the player's name
-            GameUtils.drawText(player_name, font, windowSurface, WINDOWWIDTH // 2, 130, center=True)                             # Draw the player's name
+            windowSurface.blit(Images.backgroundImage, (0, 0))  # Blit the background image
+            GameUtils.drawTextWhite("What's your name?", large_font, windowSurface, WINDOWWIDTH // 2, 50, center=True)                # Draw the prompt for the player's name
+            GameUtils.drawTextWhite(player_name, font, windowSurface, WINDOWWIDTH // 2, 130, center=True)                             # Draw the player's name
 
             if not entering_name:
-                GameUtils.drawText("Choose your character", large_font, windowSurface, WINDOWWIDTH // 2, 200, center=True)       # Draw the prompt to choose a character
+                GameUtils.drawTextWhite("Choose your character", large_font, windowSurface, WINDOWWIDTH // 2, 200, center=True)       # Draw the prompt to choose a character
                 for i, img in enumerate(character_images):
-                    img_rect = character_rects[i]                                                                                # Get the rectangle for the character image
-                    windowSurface.blit(img[0], img_rect.topleft)                                                                 # Blit the character image on the window
-                    pygame.draw.rect(windowSurface, Constants.BLACK, img_rect, 1)                                                # Draw a black border around the character image
+                    img_rect = character_rects[i]                                                                                     # Get the rectangle for the character image
+                    windowSurface.blit(img[0], img_rect.inflate(-margin, -margin).topleft)                                            # Blit the character image on the window
+                    pygame.draw.rect(windowSurface, Constants.BLACK, img_rect, 3)                                                     # Draw a black border around the character image
                     if i == selected_character:
-                        pygame.draw.rect(windowSurface, (139, 207, 186), img_rect, 3)                                            # Draw a green border around the selected character image
+                        character_color = Constants.BULLET_COLOR.get(i, Constants.BLACK)                                              # Get the color associated with the character (Black if not found)
+                        pygame.draw.rect(windowSurface, character_color, img_rect, 5)                                                 # Draw a thicker rectangle with the character's color
 
-                # Draw the confirmation button
-                pygame.draw.rect(windowSurface, (169, 169, 169), confirm_button_rect)                                            # Draw the confirmation button
-                GameUtils.drawText("Confirm", Fonts.small_font, windowSurface, confirm_button_rect.centerx, confirm_button_rect.centery, center=True, color=Constants.WHITE)    # Draw the text on the confirmation button
+                    # Draw the choose button
+                    selected_img_rect = character_rects[selected_character]
+                    choose_button_rect = pygame.Rect(
+                        selected_img_rect.centerx - 75, selected_img_rect.bottom + 10, 150, 50
+                    )  # Adjust the positions to be just below the selected image
+                    choose_button_color = Constants.BULLET_COLOR.get(selected_character, Constants.BLACK)                                                                          # Get the color associated with the selected character (Black if not found)
+                    pygame.draw.rect(windowSurface, choose_button_color, choose_button_rect)                                                                                      # Draw the choose button with the selected color
+                    GameUtils.drawText("Choose", Fonts.small_font, windowSurface, choose_button_rect.centerx, choose_button_rect.centery, center=True, color=Constants.WHITE)    # Draw the text on the choose button
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:                      # If the event type is QUIT
@@ -270,8 +278,8 @@ class CharacterSelection:
                             #print(f"Personnage {i} sélectionné via souris.") 
                             break  
                     
-                    # Check if the confirmation button was clicked
-                    if confirm_button_rect.collidepoint(mouse_x, mouse_y):  
+                    # Check if the choose button was clicked
+                    if choose_button_rect.collidepoint(mouse_x, mouse_y):  
                         with_weapons = CharacterSelection.ask_weapons_choice(windowSurface) 
                         game_started = True                      # Set the flag to indicate the game has started
                         pygame.mouse.set_visible(False)          # Hide the mouse cursor
@@ -279,11 +287,14 @@ class CharacterSelection:
                 elif event.type == pygame.KEYDOWN:
                     if entering_name:
                         if event.key == pygame.K_RETURN:
+                            if player_name == "":
+                                player_name = "Unknown player"   # Set the default name if the player doesn't enter a name
                             entering_name = False                # Set the flag to False to stop entering the name
                         elif event.key == pygame.K_BACKSPACE:    # If the backspace key is pressed
                             player_name = player_name[:-1]       # Remove the last character from the player's name
-                        else:
-                            player_name += event.unicode         # Add the typed character to the player's name
+                        elif len(player_name) < Constants.MAX_NAME_LENGTH: # Check length before adding
+                            player_name += event.unicode
+
                     else:   
                         if event.key == pygame.K_LEFT:
                             selected_character = (selected_character - 1) % len(character_images)       # Select the previous character
@@ -305,10 +316,9 @@ class CharacterSelection:
     def ask_weapons_choice(windowSurface):
         weapons_question = True
         while weapons_question:
-            pygame.draw.rect(windowSurface, Constants.WHITE, (0, Constants.WINDOWHEIGHT / 3 + 300, Constants.WINDOWWIDTH, 200))     # Draw a white rectangle to display the question
-            GameUtils.drawText('Do you want to play with a weapon?', Fonts.small_font, windowSurface,                               # Draw the question text
+            GameUtils.drawTextWhite('Do you want to play with a weapon?', Fonts.small_font, windowSurface,                          # Draw the question text
                               Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT / 3) + 350, center=True)                          # Center the text
-            GameUtils.drawText('Press Y for Yes, N for No', Fonts.small_font, windowSurface,                                        # Draw the instructions text
+            GameUtils.drawTextWhite('Press Y for Yes, N for No', Fonts.small_font, windowSurface,                                   # Draw the instructions text
                               Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT / 3) + 400, center=True)                          # Center the text
             pygame.display.update()
             for event_q in pygame.event.get():
@@ -323,18 +333,17 @@ class Countdown:
     @staticmethod
     def display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT):       
         for count in range(3, 0, -1):
-            windowSurface.fill(Constants.WHITE)                                                                                     # Fill the window with white color
-            GameUtils.drawText(f"{player_name}, are you ready?", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 3, center=True)       # Draw the prompt for the player's name
-            windowSurface.blit(character_image, (WINDOWWIDTH // 2 - character_image.get_width() // 2,                                                               # Blit the character image on the window
-                                                WINDOWHEIGHT // 2 - character_image.get_height() // 2))                                                             # Center the character image
-            GameUtils.drawText(f"Starting in {count}", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT - 100, center=True)                # Draw the countdown text  
-            pygame.display.update()                                                                                                                                 # Update the display
-            pygame.time.wait(1000)                                                                                                                                  # Wait for 1 second
-
-        windowSurface.fill(Constants.WHITE)                                                                                                                         # Fill the window with white color
-        GameUtils.drawText("GO!", Fonts.large_font, windowSurface, WINDOWWIDTH // 2, WINDOWHEIGHT // 2, center=True)                                                # Draw the "GO!" text
-        pygame.display.update()                                                                                                                                     # Update the display
-        pygame.time.wait(1000)                                                                                                                                      # Wait for 1 second
+            windowSurface.blit(Images.backgroundImage, (0, 0))                                                                                                          # Blit the background image
+            GameUtils.drawTextWhite(f"{player_name}, are you ready?", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 3, center=True)      # Draw the prompt for the player's name
+            windowSurface.blit(character_image, (WINDOWWIDTH // 2 - character_image.get_width() // 2, WINDOWHEIGHT // 2 - character_image.get_height() // 2))           # Blit the character image on the window
+            GameUtils.drawTextWhite(f"Starting in {count}", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT - 100, center=True)               # Draw the countdown text
+            pygame.display.update()                                                                                                                                     # Update the display
+            pygame.time.wait(1000)                                                                                                                                      # Wait for 1 second
+                                                                                                                                                                        
+        windowSurface.blit(Images.backgroundImage, (0, 0))                                                                                                              # Blit the background image
+        GameUtils.drawTextWhite("GO!", Fonts.large_font, windowSurface, Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2, center=True)                           # Draw the "GO!" text
+        pygame.display.update()                                                                                                                                         # Update the display
+        pygame.time.wait(1000)                                                                                                                                          # Wait for 1 second
 
 
 # Game class
@@ -388,11 +397,11 @@ class Game:
         self.game_loop()                                          # Start the game loop
 
     def show_start_screen(self):                                  # Function to show the start screen
-        self.windowSurface.fill(Constants.BACKGROUNDCOLOR)        # Fill the window with the background color
-        GameUtils.drawText('Press a key to start', Fonts.large_font, self.windowSurface,                                  # Draw the prompt to start the game
+        self.windowSurface.blit(Images.startImage, (0, 0))        # Blit the start image as the background
+        GameUtils.drawTextWhite('Press a key to start', Fonts.large_font, self.windowSurface,                                  # Draw the prompt to start the game
                            Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 3, center=True)                          # Center the text
-        GameUtils.drawText('Press R to see rules', Fonts.small_font, self.windowSurface,                                  # Draw the prompt to see the rules
-                           Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 100, center=True)                  # Center the text
+        GameUtils.drawTextWhite('Press R to see rules', Fonts.small_font, self.windowSurface,                                  # Draw the prompt to see the rules
+                           Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 400, center=True)                  # Center the text
         pygame.display.update()                                  # Update the display
         GameUtils.waitForPlayerToPressKey(self)                  # Wait for the player to press a key
 
@@ -509,7 +518,7 @@ class Game:
     def spawn_baddies(self):
         if not self.reverseCheat and not self.slowCheat:
             self.baddieAddCounter += 1                              # Increment the baddie add counter
-        if self.baddieAddCounter == Constants.ADDNEWBADDIERATE:     # If the baddie add counter reaches the rate
+        if self.baddieAddCounter == Constants.ADD_NEW_BADDIE_RATE:  # If the baddie add counter reaches the rate
             self.baddieAddCounter = 0                               # Reset the baddie add counter
             baddie = Baddie()                                       # Create a new baddie
             self.baddies.append(baddie)                             # Add the baddie to the list of baddies
@@ -705,9 +714,9 @@ class Player:
 
     def update_position(self):
         if self.moveUp and self.rect.top > 0:   
-            self.rect.move_ip(0, -1 * Constants.PLAYERMOVERATE)     # Move the player up
+            self.rect.move_ip(0, -1 * Constants.PLAYER_MOVE_RATE)     # Move the player up
         if self.moveDown and self.rect.bottom < Constants.WINDOWHEIGHT:
-            self.rect.move_ip(0, Constants.PLAYERMOVERATE)          # Move the player down
+            self.rect.move_ip(0, Constants.PLAYER_MOVE_RATE)          # Move the player down
 
     def shoot_bullet(self, bullets):
         bullet_color = Constants.BULLET_COLOR.get(self.selected_character, (255, 0, 0))  # Get the bullet color based on the selected character
@@ -732,7 +741,7 @@ class Player:
 
 class Baddie:
     def __init__(self):
-        self.size = random.randint(Constants.BADDIEMINSIZE, Constants.BADDIEMAXSIZE)  # Randomly set the size of the baddie between BADDIEMINSIZE and BADDIEMAXSIZE
+        self.size = random.randint(Constants.BADDIE_MIN_SIZE, Constants.BADDIE_MAX_SIZE)  # Randomly set the size of the baddie between BADDIE_MIN_SIZE and BADDIE_MAX_SIZE
         prob = random.randint(1, 100)                                                  # Generate a random probability
         if prob <= 50:
             self.type = 'asteroid'             # Set the type to asteroid
@@ -753,7 +762,7 @@ class Baddie:
         self.rect = self.surface.get_rect()                                                     # Get the rectangle for the image
         self.rect.x = Constants.WINDOWWIDTH + self.size                                         # Set the initial x position of the baddie
         self.rect.y = random.randint(0, Constants.WINDOWHEIGHT - self.size)                     # Set the initial y position of the baddie
-        self.speed = -random.randint(Constants.BADDIEMINSPEED, Constants.BADDIEMAXSPEED)        # Set the speed of the baddie
+        self.speed = -random.randint(Constants.BADDIE_MIN_SPEED, Constants.BADDIE_MAX_SPEED)    # Set the speed of the baddie
         self.mask = pygame.mask.from_surface(self.surface)                                      # Create a mask for pixel-perfect collision detection
 
     def update_position(self):
@@ -762,7 +771,7 @@ class Baddie:
 class Spaceship(Baddie):
     def __init__(self):
         super().__init__()                                                                     # Call the constructor of the Baddie class
-        self.size = random.randint(Constants.SPACEMINSIZE, Constants.SPACEMAXSIZE)             # Randomly set the size of the spaceship between SPACEMINSIZE and SPACEMAXSIZE
+        self.size = random.randint(Constants.SPACE_MIN_SIZE, Constants.SPACE_MAX_SIZE)             # Randomly set the size of the spaceship between SPACE_MIN_SIZE and SPACE_MAX_SIZE
         self.type = 'spaceship'                                                                # Set the type to spaceship
         self.image = Images.spaceshipImage                                                     # Set the image to the spaceship image
         self.health = 5                                                                        # Set the health to 5 (you need to shoot the spaceship five times to destroy it)
@@ -775,7 +784,7 @@ class Spaceship(Baddie):
     def reset_position(self):
         self.rect.x = Constants.WINDOWWIDTH + self.size                                        # Set the initial x position of the spaceship
         self.rect.y = random.randint(0, Constants.WINDOWHEIGHT - self.size)                    # Set the initial y position of the spaceship
-        self.speed = -random.randint(Constants.BADDIEMINSPEED, Constants.BADDIEMAXSPEED)       # Set the speed of the spaceship
+        self.speed = -random.randint(Constants.BADDIE_MIN_SPEED, Constants.BADDIE_MAX_SPEED)   # Set the speed of the spaceship
 
 # Start the game
 if __name__ == '__main__':      
