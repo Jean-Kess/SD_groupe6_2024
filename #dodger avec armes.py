@@ -46,6 +46,7 @@ class Fonts:
     small_font = None                  # Font for small text     
     font = None                        # Font for regular text
     large_font = None                  # Font for large text
+    big_font = None                    # Font for big text
     game_over_font = None              # Font for game over text
     retry_font = None                  # Font for retry text
 
@@ -55,6 +56,7 @@ class Fonts:
         cls.small_font = pygame.font.Font('gameFont.ttf', 28)
         cls.font = pygame.font.Font('Anton-Regular.ttf', 38)
         cls.large_font = pygame.font.Font('gameFont.ttf', 48)
+        cls.big_font = pygame.font.Font('gameFont.ttf', 74)
         cls.game_over_font = pygame.font.Font('gameFont.ttf', 64)
         cls.retry_font = pygame.font.Font('gameFont.ttf', 35)
 
@@ -107,7 +109,7 @@ class Images:
         cls.heartImage = pygame.image.load('heartImage.png')             # image for the heart which signifies the number of lives
         cls.heartImage = pygame.transform.scale(cls.heartImage, (22, 22))# Resize the heart image to 22x22 pixels
         
-        cls.backgroundImage = pygame.image.load('backgroundsky.png').convert() # Image for the background
+        cls.backgroundImage = pygame.image.load('backgroundImage.png').convert() # Image for the background
         cls.backgroundImage = pygame.transform.scale(cls.backgroundImage, (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))   # Resize the background image to fit the window
         
         cls.pausedImage = pygame.image.load('paused.png').convert()      # Image for the paused screen
@@ -480,6 +482,8 @@ class Game:
 
     def show_paused_screen(self):
         self.windowSurface.blit(Images.pausedImage, (0, 0))     # Blit the paused image on the window
+        GameUtils.drawTextWhite('Game Paused', Fonts.big_font, self.windowSurface, Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2 - 30, center=True)     # Draw the paused text
+        GameUtils.drawTextWhite('Press P to continue', Fonts.small_font, self.windowSurface, Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2 + 30, center=True)   # Draw the prompt to continue
         Sounds.immortality_music.stop()                         # Stop the immortality music
         pygame.mixer.music.play()                               # Play the background music
         pygame.display.update()
