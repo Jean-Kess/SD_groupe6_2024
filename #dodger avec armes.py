@@ -4,6 +4,7 @@
 import pygame                                                 # Import the Pygame library
 import random                                                 # Import the random module
 import sys                                                    # Import the sys module
+import math                                                   # Import the math module
 from pygame.locals import *                                   # Import the Pygame constants
 
 # Constants class
@@ -178,7 +179,7 @@ class Smoke:
     def update(self):
         self.particles = [i for i in self.particles if i.alive]                          # Remove dead particles
         self.frames += 1                                                                 # Increment the frame counter
-        if self.frames % 2 == 0:
+        if self.frames % 3 == 0:                                                         # If the frame counter is divisible by 3
             self.frames = 0                                                              # Reset the frame counter
             self.particles.append(SmokeParticle(self.x, self.y))                         # Add a new smoke particle
         for i in self.particles:
@@ -619,7 +620,8 @@ class Game:
         self.windowSurface.blit(Images.backgroundImage, (self.background_x2, 0))    # Blit the second background image
         
         self.smoke.draw()                                                            # Draw the smoke behind the player
-
+        player_image = self.player.get_image(immortal=self.star_active)
+        self.windowSurface.blit(player_image, self.player.rect)
 
         if self.with_weapons:                                                       # If the player is playing with weapons
             GameUtils.drawTextWhite('Score: %s' % (self.score), Fonts.font, self.windowSurface, 10, 0)                                      # Draw the score
@@ -630,7 +632,7 @@ class Game:
             GameUtils.drawTextWhite('Score: %s' % (self.score), Fonts.font, self.windowSurface, 10, 0)                                      # Draw the score
             GameUtils.drawTextWhite('Top Score: %s' % (self.topScore), Fonts.font, self.windowSurface, 10, 40)                              # Draw the top score
             GameUtils.draw_hearts(self.lives, Fonts.font, self.windowSurface, 10, 80)                                                       # Draw the hearts for the number of lives
-        self.windowSurface.blit(self.player.image, self.player.rect)                                                                        # Blit the player image
+                                                                               # Blit the player image
         for baddie in self.baddies: 
             self.windowSurface.blit(baddie.surface, baddie.rect)                                                                            # Blit the baddie image
         if self.starRect:   
@@ -793,6 +795,14 @@ class Player:
         self.image = self.images[index]                             # Update the player image
         self.image = pygame.transform.scale(self.image, (70, 70))   # Scale the image
         self.mask = pygame.mask.from_surface(self.image)            # Update the mask
+
+    def get_image(self, immortal=False):                            # Function to get the player image
+        if immortal:                                                # If the player has the immortality star
+            temp_image = self.image.copy()                          # Create a temporary image
+            alpha_value = 128 + 50 * abs(math.sin(pygame.time.get_ticks() / 100))   # Calculate the alpha value for the temporary image (to make it blink)
+            temp_image.set_alpha(int(alpha_value))                  # Set the alpha value of the temporary image
+            return temp_image
+        return self.image
 
     def reset(self):
         self.image = self.images[1]                                 # Reset the player image
