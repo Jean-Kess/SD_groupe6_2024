@@ -75,12 +75,12 @@ class Sounds:
 
     @classmethod
     def load_assets(cls):
-        cls.game_over_sound = pygame.mixer.Sound('game_over.wav')       # Load the game over sound
-        pygame.mixer.music.load('background.wav')                       # Load the background music
-        cls.immortality_music = pygame.mixer.Sound('immortality.wav')   # Load the immortality music
-        cls.baddie_hit_sound = pygame.mixer.Sound('explosion_meteor.wav')           # Load the baddie hit sound
-        cls.baddie_shoot_sound = pygame.mixer.Sound('boom.wav')         # Load the baddie shoot sound       
-        cls.shoot_sound = pygame.mixer.Sound('shoot_sound.wav')         # Load the shoot sound
+        cls.game_over_sound = pygame.mixer.Sound('game_over.wav')         # Load the game over sound
+        pygame.mixer.music.load('background.wav')                         # Load the background music
+        cls.immortality_music = pygame.mixer.Sound('immortality.wav')     # Load the immortality music
+        cls.baddie_hit_sound = pygame.mixer.Sound('explosion_meteor.wav') # Load the baddie hit sound
+        cls.baddie_shoot_sound = pygame.mixer.Sound('boom.wav')           # Load the baddie shoot sound       
+        cls.shoot_sound = pygame.mixer.Sound('shoot_sound.wav')           # Load the shoot sound
 
 # Images class
 class Images:
@@ -107,19 +107,19 @@ class Images:
     @classmethod
     def load_assets(cls):
         cls.baddie_images = {
-            'planet': cls.load_and_scale('violet_planet_image.png'),                                                                      # Load and scale the planet image
-            'strong_planet': cls.load_and_scale('blue_planet_image.png'),                                                               # Load and scale the strong planet image
-            'super_strong_planet': cls.load_and_scale('green_violet_planet_image.png')                                                          # Load and scale the super strong planet image
+            'planet': cls.load_and_scale('violet_planet_image.png'),                                                           # Load and scale the planet image
+            'strong_planet': cls.load_and_scale('blue_planet_image.png'),                                                      # Load and scale the strong planet image
+            'super_strong_planet': cls.load_and_scale('green_violet_planet_image.png')                                         # Load and scale the super strong planet image
         }
-        cls.spaceship_image = cls.load_and_scale('spaceship_image.png')                                                          # Load and scale the spaceship image
-        cls.star_image = cls.load_and_scale('star_image.png', (30, 30))                                                          # Load and scale the star image
-        cls.heart_image = cls.load_and_scale('heart_image.png', (22, 22))                                                        # Load and scale the heart image
-        cls.background_image = cls.load_and_scale('background_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))       # Load and scale the background image
-        cls.paused_image = cls.load_and_scale('paused_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))               # Load and scale the paused image
-        cls.start_image = cls.load_and_scale('start_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                 # Load and scale the start image
-        cls.rules_image = cls.load_and_scale('rules_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                 # Load and scale the rules image
-        cls.explosion_frames = [cls.load_and_scale(f'explosion0{i}.png') for i in range(9)]                                      # Load and scale the explosion frames
-        cls.smoke_image = cls.load_and_scale('smoke_image.png')                                                                  # Load and scale the smoke image
+        cls.spaceship_image = cls.load_and_scale('spaceship_image.png')                                                        # Load and scale the spaceship image
+        cls.star_image = cls.load_and_scale('star_image.png', (30, 30))                                                        # Load and scale the star image
+        cls.heart_image = cls.load_and_scale('heart_image.png', (22, 22))                                                      # Load and scale the heart image
+        cls.background_image = cls.load_and_scale('background_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))     # Load and scale the background image
+        cls.paused_image = cls.load_and_scale('paused_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))             # Load and scale the paused image
+        cls.start_image = cls.load_and_scale('start_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))               # Load and scale the start image
+        cls.rules_image = cls.load_and_scale('rules_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))               # Load and scale the rules image
+        cls.explosion_frames = [cls.load_and_scale(f'explosion0{i}.png') for i in range(9)]                                    # Load and scale the explosion frames
+        cls.smoke_image = cls.load_and_scale('smoke_image.png')                                                                # Load and scale the smoke image
         colors = ['Blue', 'Green', 'Pink', 'Yellow']    
         cls.character_images = []
         for color in colors:        
@@ -252,7 +252,7 @@ class GameUtils:
     def display_rules(windowSurface):
         pygame.mixer.music.stop()                                    # Stop the background music
         screen_copy = windowSurface.copy()                           # Create a copy of the window surface
-        screen_copy.blit(Images.rules_image, (0, 0))                              # Blit the rules image on the copy
+        screen_copy.blit(Images.rules_image, (0, 0))                 # Blit the rules image on the copy
         windowSurface.blit(screen_copy, (0, 0))                      # Blit the copy on the window surface
         pygame.display.flip()                                        # Update the display
         while True:
@@ -388,14 +388,14 @@ class Countdown:
     @staticmethod
     def display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT):       
         for count in range(3, 0, -1):
-            windowSurface.blit(Images.background_image, (0, 0))                                                                                                          # Blit the background image
+            windowSurface.blit(Images.background_image, (0, 0))                                                                                                         # Blit the background image
             GameUtils.drawTextWhite(f"{player_name}, are you ready?", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 3, center=True)      # Draw the prompt for the player's name
             windowSurface.blit(character_image, (WINDOWWIDTH // 2 - character_image.get_width() // 2, WINDOWHEIGHT // 2 - character_image.get_height() // 2))           # Blit the character image on the window
             GameUtils.drawTextWhite(f"Starting in {count}", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT - 100, center=True)               # Draw the countdown text
             pygame.display.update()                                                                                                                                     # Update the display
             pygame.time.wait(1000)                                                                                                                                      # Wait for 1 second
                                                                                                                                                                         
-        windowSurface.blit(Images.background_image, (0, 0))                                                                                                              # Blit the background image
+        windowSurface.blit(Images.background_image, (0, 0))                                                                                                             # Blit the background image
         GameUtils.drawTextWhite("GO!", Fonts.large_font, windowSurface, Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2, center=True)                           # Draw the "GO!" text
         pygame.display.update()                                                                                                                                         # Update the display
         pygame.time.wait(1000)                                                                                                                                          # Wait for 1 second
@@ -630,7 +630,7 @@ class Game:
         player_image = self.player.get_image(immortal=self.star_active)
         self.windowSurface.blit(player_image, self.player.rect)
 
-        if self.with_weapons:                                                       # If the player is playing with weapons
+        if self.with_weapons:                                                                                                               # If the player is playing with weapons
             GameUtils.drawTextWhite('Score: %s' % (self.score), Fonts.font, self.windowSurface, 10, 0)                                      # Draw the score
             GameUtils.drawTextWhite('Top Score: %s' % (self.topScore), Fonts.font, self.windowSurface, 10, 40)                              # Draw the top score
             GameUtils.drawTextWhite(f'Number of baddies destroyed: {self.nb_baddies_destroyed}', Fonts.font, self.windowSurface, 10, 80)    # Draw the number of baddies destroyed (Line that won't be there if you play without a weapon)
@@ -745,7 +745,7 @@ class Game:
         GameUtils.drawTextWhite(retry_text, Fonts.retry_font, self.windowSurface, retry_x, (Constants.WINDOWHEIGHT / 3) + 100)          # Draw the retry text
 
         pygame.display.update()
-        pygame.time.wait(2000)                                                                 # Wait for 2 seconds
+        pygame.time.wait(2000)                                                                # Wait for 2 seconds
         
         # Check if the player has beaten the top score
         print(f"Score: {self.score}, Top Score: {self.topScore}")  # Debug
