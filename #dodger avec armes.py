@@ -56,7 +56,7 @@ class Fonts:
     @classmethod
     def load_assets(cls):
         cls.small_font = pygame.font.Font('gameFont.ttf', 28)           # Load the small font
-        cls.font = pygame.font.Font('Anton-Regular.ttf', 38)            # Load the regular font
+        cls.font = pygame.font.Font('antonRegular.ttf', 38)            # Load the regular font
         cls.large_font = pygame.font.Font('gameFont.ttf', 48)           # Load the large font
         cls.big_font = pygame.font.Font('gameFont.ttf', 74)             # Load the big font
         cls.game_over_font = pygame.font.Font('gameFont.ttf', 64)       # Load the game over font
@@ -64,30 +64,32 @@ class Fonts:
 
 # Sounds class
 class Sounds:
-    gameOverSound = None    
+    game_over_sound = None    
     immortality_music = None
     baddie_hit_sound = None
     baddie_shoot_sound = None
+    shoot_sound = None  # Add a new attribute for the shoot sound
 
     @classmethod
     def load_assets(cls):
-        cls.gameOverSound = pygame.mixer.Sound('GameOver!.wav')         # Load the game over sound
-        pygame.mixer.music.load('Background.wav')                       # Load the background music
-        cls.immortality_music = pygame.mixer.Sound('Immortality.wav')   # Load the immortality music
-        cls.baddie_hit_sound = pygame.mixer.Sound('Boom.wav')           # Load the baddie hit sound
-        cls.baddie_shoot_sound = pygame.mixer.Sound('Boom.wav')         # Load the baddie shoot sound       
+        cls.game_over_sound = pygame.mixer.Sound('game_over.wav')       # Load the game over sound
+        pygame.mixer.music.load('background.wav')                       # Load the background music
+        cls.immortality_music = pygame.mixer.Sound('immortality.wav')   # Load the immortality music
+        cls.baddie_hit_sound = pygame.mixer.Sound('explosion_meteor.wav')           # Load the baddie hit sound
+        cls.baddie_shoot_sound = pygame.mixer.Sound('boom.wav')         # Load the baddie shoot sound       
+        cls.shoot_sound = pygame.mixer.Sound('shoot_sound.wav')  # Load the shoot sound
 
 # Images class
 class Images:
     baddie_images = {}
-    spaceshipImage = None
-    starImage = None
-    heartImage = None
-    backgroundImage = None
-    pausedImage = None
-    startImage = None
-    rulesImage = None
-    smokeImage = None
+    spaceship_image = None
+    star_image = None
+    heart_image = None
+    background_image = None
+    paused_image = None
+    start_image = None
+    rules_image = None
+    smoke_image = None
     explosion_frames = []
     character_images = []
 
@@ -102,19 +104,19 @@ class Images:
     @classmethod
     def load_assets(cls):
         cls.baddie_images = {
-            'planet': cls.load_and_scale('planet09.png'),                                                                      # Load and scale the planet image
-            'strong_planet': cls.load_and_scale('planet07.png'),                                                               # Load and scale the strong planet image
-            'super_strong_planet': cls.load_and_scale('planet01.png')                                                          # Load and scale the super strong planet image
+            'planet': cls.load_and_scale('violet_planet_image.png'),                                                                      # Load and scale the planet image
+            'strong_planet': cls.load_and_scale('blue_planet_image.png'),                                                               # Load and scale the strong planet image
+            'super_strong_planet': cls.load_and_scale('green_violet_planet_image.png')                                                          # Load and scale the super strong planet image
         }
-        cls.spaceshipImage = cls.load_and_scale('spaceship2.png')                                                              # Load and scale the spaceship image
-        cls.starImage = cls.load_and_scale('starImage.png', (30, 30))                                                          # Load and scale the star image
-        cls.heartImage = cls.load_and_scale('heartImage.png', (22, 22))                                                        # Load and scale the heart image
-        cls.backgroundImage = cls.load_and_scale('backgroundImage.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))       # Load and scale the background image
-        cls.pausedImage = cls.load_and_scale('paused.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                    # Load and scale the paused image
-        cls.startImage = cls.load_and_scale('startImage.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                 # Load and scale the start image
-        cls.rulesImage = cls.load_and_scale('rules.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                      # Load and scale the rules image
-        cls.explosion_frames = [cls.load_and_scale(f'explosion0{i}.png') for i in range(9)]                                    # Load and scale the explosion frames
-        cls.smokeImage = cls.load_and_scale('smoke.png')                                                                       # Load and scale the smoke image
+        cls.spaceship_image = cls.load_and_scale('spaceship_image.png')                                                          # Load and scale the spaceship image
+        cls.star_image = cls.load_and_scale('star_image.png', (30, 30))                                                          # Load and scale the star image
+        cls.heart_image = cls.load_and_scale('heart_image.png', (22, 22))                                                        # Load and scale the heart image
+        cls.background_image = cls.load_and_scale('background_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))       # Load and scale the background image
+        cls.paused_image = cls.load_and_scale('paused_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))               # Load and scale the paused image
+        cls.start_image = cls.load_and_scale('start_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                 # Load and scale the start image
+        cls.rules_image = cls.load_and_scale('rules_image.png', (Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                 # Load and scale the rules image
+        cls.explosion_frames = [cls.load_and_scale(f'explosion0{i}.png') for i in range(9)]                                      # Load and scale the explosion frames
+        cls.smoke_image = cls.load_and_scale('smoke_image.png')                                                                  # Load and scale the smoke image
         colors = ['Blue', 'Green', 'Pink', 'Yellow']    
         cls.character_images = []
         for color in colors:        
@@ -145,7 +147,7 @@ class SmokeParticle:
         self.x = x                                                                       # Set the x-coordinate
         self.y = y                                                                       # Set the y-coordinate
         self.scale_k = 0.07                                                              # Set the scale factor
-        self.img = scale(Images.smokeImage, self.scale_k)                                # Scale the smoke image
+        self.img = scale(Images.smoke_image, self.scale_k)                                # Scale the smoke image
         self.alpha = 255                                                                 # Set the alpha value
         self.alpha_rate = 3                                                              # Set the alpha rate
         self.alive = True                                                                # Set the alive status
@@ -163,7 +165,7 @@ class SmokeParticle:
         self.alpha_rate -= 0.1                                                           # Decrease the alpha rate
         if self.alpha_rate < 1.5:
             self.alpha_rate = 1.5                                                        # Ensure alpha rate does not go below 1.5
-        self.img = scale(Images.smokeImage, self.scale_k)                                # Scale the smoke image
+        self.img = scale(Images.smoke_image, self.scale_k)                               # Scale the smoke image
         self.img.set_alpha(self.alpha)                                                   # Set the alpha value of the image
 
     def draw(self):
@@ -241,13 +243,13 @@ class GameUtils:
         heart_spacing = 30                                            # Spacing between hearts
         heart_y_offset = 18                                           # Vertical offset for the hearts
         for i in range(lives):
-            surface.blit(Images.heartImage, (x + textrect.width + (i * heart_spacing), y + heart_y_offset))     # Draw a heart for each life
+            surface.blit(Images.heart_image, (x + textrect.width + (i * heart_spacing), y + heart_y_offset))     # Draw a heart for each life
 
     @staticmethod
     def display_rules(windowSurface):
         pygame.mixer.music.stop()                                    # Stop the background music
         screen_copy = windowSurface.copy()                           # Create a copy of the window surface
-        screen_copy.blit(Images.rulesImage, (0, 0))                              # Blit the rules image on the copy
+        screen_copy.blit(Images.rules_image, (0, 0))                              # Blit the rules image on the copy
         windowSurface.blit(screen_copy, (0, 0))                      # Blit the copy on the window surface
         pygame.display.flip()                                        # Update the display
         while True:
@@ -293,7 +295,7 @@ class CharacterSelection:
 
     
         while not game_started:
-            windowSurface.blit(Images.backgroundImage, (0, 0))      # Blit the background image
+            windowSurface.blit(Images.background_image, (0, 0))      # Blit the background image
             GameUtils.drawTextWhite("What's your name?", large_font, windowSurface, WINDOWWIDTH // 2, 50, center=True)                # Draw the prompt for the player's name
             GameUtils.drawTextWhite(player_name, font, windowSurface, WINDOWWIDTH // 2, 130, center=True)                             # Draw the player's name
 
@@ -383,14 +385,14 @@ class Countdown:
     @staticmethod
     def display_the_countdown(windowSurface, large_font, character_image, player_name, WHITE, WINDOWWIDTH, WINDOWHEIGHT):       
         for count in range(3, 0, -1):
-            windowSurface.blit(Images.backgroundImage, (0, 0))                                                                                                          # Blit the background image
+            windowSurface.blit(Images.background_image, (0, 0))                                                                                                          # Blit the background image
             GameUtils.drawTextWhite(f"{player_name}, are you ready?", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 3, center=True)      # Draw the prompt for the player's name
             windowSurface.blit(character_image, (WINDOWWIDTH // 2 - character_image.get_width() // 2, WINDOWHEIGHT // 2 - character_image.get_height() // 2))           # Blit the character image on the window
             GameUtils.drawTextWhite(f"Starting in {count}", Fonts.small_font, windowSurface, WINDOWWIDTH // 2, Constants.WINDOWHEIGHT - 100, center=True)               # Draw the countdown text
             pygame.display.update()                                                                                                                                     # Update the display
             pygame.time.wait(1000)                                                                                                                                      # Wait for 1 second
                                                                                                                                                                         
-        windowSurface.blit(Images.backgroundImage, (0, 0))                                                                                                              # Blit the background image
+        windowSurface.blit(Images.background_image, (0, 0))                                                                                                              # Blit the background image
         GameUtils.drawTextWhite("GO!", Fonts.large_font, windowSurface, Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2, center=True)                           # Draw the "GO!" text
         pygame.display.update()                                                                                                                                         # Update the display
         pygame.time.wait(1000)                                                                                                                                          # Wait for 1 second
@@ -448,11 +450,13 @@ class Game:
         self.game_loop()                                          # Start the game loop
 
     def show_start_screen(self):                                  # Function to show the start screen
-        self.windowSurface.blit(Images.startImage, (0, 0))        # Blit the start image as the background
-        GameUtils.drawTextWhite('Press a key to start', Fonts.large_font, self.windowSurface,                                  # Draw the prompt to start the game
-                           Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 3, center=True)                          # Center the text
-        GameUtils.drawTextWhite('Press R to see rules', Fonts.small_font, self.windowSurface,                                  # Draw the prompt to see the rules
-                           Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 400, center=True)                  # Center the text
+        self.windowSurface.blit(Images.start_image, (0, 0))       # Blit the start image as the background
+        GameUtils.drawTextWhite('Cosmic Run', Fonts.large_font, self.windowSurface,                                  # Name of our game
+                           Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) -200 , center=True)             # Center the text
+        GameUtils.drawTextWhite('Press a key to start', Fonts.large_font, self.windowSurface,                        # Draw the prompt to start the game
+                           Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 100, center=True)             # Center the text
+        GameUtils.drawTextWhite('Press R to see rules', Fonts.small_font, self.windowSurface,                        # Draw the prompt to see the rules
+                           Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 400, center=True)             # Center the text
         pygame.display.update()                                  # Update the display
         GameUtils.waitForPlayerToPressKey(self)                  # Wait for the player to press a key
 
@@ -530,7 +534,7 @@ class Game:
                 self.player.rect.centery = event.pos[1]         # Move the player with the mouse
 
     def show_paused_screen(self):
-        self.windowSurface.blit(Images.pausedImage, (0, 0))     # Blit the paused image on the window
+        self.windowSurface.blit(Images.paused_image, (0, 0))     # Blit the paused image on the window
         GameUtils.drawTextWhite('Game Paused', Fonts.big_font, self.windowSurface, Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2 - 30, center=True)     # Draw the paused text
         GameUtils.drawTextWhite('Press P to continue', Fonts.small_font, self.windowSurface, Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2 + 30, center=True)   # Draw the prompt to continue
         Sounds.immortality_music.stop()                         # Stop the immortality music
@@ -549,7 +553,7 @@ class Game:
         # Projectiles update
         for bullet in self.bullets[:]:
             bullet['pos'][0] += bullet['speed']                 # Move the bullet
-            if bullet['pos'][0] > Constants.WINDOWWIDTH:     # If the bullet goes off the screen
+            if bullet['pos'][0] > Constants.WINDOWWIDTH:        # If the bullet goes off the screen
                 self.bullets.remove(bullet)                     # Remove the bullet
         
         # Baddies spawn
@@ -582,7 +586,7 @@ class Game:
 
     def update_star(self):
         self.star_counter += 1                                      # Increment the star counter
-        STAR_APPEAR_FRAMES = Constants.FPS_INITIAL * 10             # Set the number of frames for the star to appear
+        STAR_APPEAR_FRAMES = Constants.FPS_INITIAL * 30             # Increase the number of frames for the star to appear (less frequent)
         if self.star_counter >= STAR_APPEAR_FRAMES:                 # If the star counter reaches the number of frames
             self.starRect = pygame.Rect(                            # Create a star rectangle
                 Constants.WINDOWWIDTH,                              # Start at the right edge       
@@ -616,8 +620,8 @@ class Game:
 
     
     def draw(self):
-        self.windowSurface.blit(Images.backgroundImage, (self.background_x1, 0))    # Blit the first background image
-        self.windowSurface.blit(Images.backgroundImage, (self.background_x2, 0))    # Blit the second background image
+        self.windowSurface.blit(Images.background_image, (self.background_x1, 0))    # Blit the first background image
+        self.windowSurface.blit(Images.background_image, (self.background_x2, 0))    # Blit the second background image
         
         self.smoke.draw()                                                            # Draw the smoke behind the player
         player_image = self.player.get_image(immortal=self.star_active)
@@ -636,7 +640,7 @@ class Game:
         for baddie in self.baddies: 
             self.windowSurface.blit(baddie.surface, baddie.rect)                                                                            # Blit the baddie image
         if self.starRect:   
-            self.windowSurface.blit(Images.starImage, self.starRect)                                                                        # Blit the star image
+            self.windowSurface.blit(Images.star_image, self.starRect)                                                                        # Blit the star image
         for bullet in self.bullets:
             pygame.draw.circle(self.windowSurface, bullet['color'], bullet['pos'], bullet['radius'])
         if self.star_active:
@@ -718,7 +722,8 @@ class Game:
 
     def show_game_over_screen(self):        
         pygame.mixer.music.stop()                                                                 # Stop the background music
-        Sounds.gameOverSound.play()                                                               # Play the game over sound
+        pygame.time.wait(2000)                                                                    # Wait for 1 second before playing the game over sound
+        Sounds.game_over_sound.play()                                                             # Play the game over sound
 
         # Load and display the explosion image
         explosion_image = pygame.image.load("explosion08.png")                                   # Load the explosion image                  
@@ -751,7 +756,7 @@ class Game:
 
         self.FPS = Constants.FPS_INITIAL                                                      # Reset the frames per second
         GameUtils.waitForPlayerToPressKey(self)                                               # Wait for the player to press a key
-        Sounds.gameOverSound.stop()                                                           # Stop the game over sound
+        Sounds.game_over_sound.stop()                                                         # Stop the game over sound
 
     def reset_game(self):
         self.baddies.clear()
@@ -789,12 +794,13 @@ class Player:
     def shoot_bullet(self, bullets):
         bullet_color = Constants.BULLET_COLOR.get(self.selected_character, (255, 0, 0))  # Get the bullet color based on the selected character
         bullet = {
-            'pos': [self.rect.right, self.rect.centery],  # Use position instead of rectangle
-            'radius': Constants.BULLET_SIZE[0] // 2,  # Set the radius of the bullet
-            'speed': Constants.BULLET_SPEED,  # Set the bullet speed
-            'color': bullet_color  # Set the bullet color
+            'pos': [self.rect.right, self.rect.centery],                                 # Use position instead of rectangle
+            'radius': Constants.BULLET_SIZE[0] // 2,                                     # Set the radius of the bullet
+            'speed': Constants.BULLET_SPEED,                                             # Set the bullet speed
+            'color': bullet_color                                                        # Set the bullet color
         }
-        bullets.append(bullet)  # Add the bullet to the bullets list
+        bullets.append(bullet)                                                           # Add the bullet to the bullets list
+        Sounds.shoot_sound.play()                                                        # Play the shoot sound
 
     def update_image(self, index):
         self.image = self.images[index]                             # Update the player image
@@ -866,7 +872,7 @@ class Spaceship(Baddie):
         super().__init__()
         self.size = size                                                                           # Set the size of the spaceship    
         self.type = 'spaceship'                                                                    # Set the type to 'spaceship'
-        self.image = Images.spaceshipImage                                                         # Set the spaceship image 
+        self.image = Images.spaceship_image                                                         # Set the spaceship image 
         self.health = 5                                                                            # Set the health to 5 (you need to shoot the spaceship 5 times to destroy it)
         self.damage = 2                                                                            # Set the damage to 2 (if you collide with the spaceship, you lose 2 lives)
         self.surface = pygame.transform.scale(self.image, (self.size, self.size))                  # Scale the image according to the spaceship's size
