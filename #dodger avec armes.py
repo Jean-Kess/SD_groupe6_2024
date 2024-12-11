@@ -30,7 +30,7 @@ class Constants:
     PLAYER_MOVE_RATE = 5
 
     # Bullet settings
-    BULLET_SIZE = (10, 5)                                     # Set the bullet size
+    BULLET_SIZE = (8, 8)                                      # Set the bullet size
     BULLET_SPEED = 10                                         # Set the bullet speed
     BULLET_COLOR = {
         0: (163, 195, 235),                                   # Blue for the first character (index 0)
@@ -548,8 +548,8 @@ class Game:
         
         # Projectiles update
         for bullet in self.bullets[:]:
-            bullet['rect'].x += bullet['speed']                 # Move the bullet
-            if bullet['rect'].left > Constants.WINDOWWIDTH:     # If the bullet goes off the screen
+            bullet['pos'][0] += bullet['speed']                 # Move the bullet
+            if bullet['pos'][0] > Constants.WINDOWWIDTH:     # If the bullet goes off the screen
                 self.bullets.remove(bullet)                     # Remove the bullet
         
         # Baddies spawn
@@ -638,7 +638,7 @@ class Game:
         if self.starRect:   
             self.windowSurface.blit(Images.starImage, self.starRect)                                                                        # Blit the star image
         for bullet in self.bullets:
-            pygame.draw.rect(self.windowSurface, bullet['color'], bullet['rect'])
+            pygame.draw.circle(self.windowSurface, bullet['color'], bullet['pos'], bullet['radius'])
         if self.star_active:
             immortality_seconds = self.star_effect_counter // Constants.FPS_INITIAL                                                         # Calculate the number of seconds the star effect will last
             if self.with_weapons:
@@ -651,12 +651,16 @@ class Game:
         # Bullet collisions
         for bullet in self.bullets[:]:
             for baddie in self.baddies[:]:
-                if bullet['rect'].colliderect(baddie.rect):
-                    baddie.health -= 1                          # Decrement the baddie's health
-                    self.bullets.remove(bullet)                 # Remove the bullet
-                    if baddie.health <= 0:                      # If the baddie's health is less than or equal to 0
-                        self.remove_baddie(baddie)              # Remove the baddie
+                # Calculate the distance between the bullet and the baddie
+                distance = math.hypot(bullet['pos'][0] - baddie.rect.centerx, bullet['pos'][1] - baddie.rect.centery)
+                # Check if the distance is less than the sum of the radii (collision detection)
+                if distance < bullet['radius'] + baddie.rect.width // 2:
+                    baddie.health -= 1                                          # Decrement the baddie's health
+                    self.bullets.remove(bullet)                                 # Remove the bullet
+                    if baddie.health <= 0:                                      # If the baddie's health is less than or equal to 0
+                        self.remove_baddie(baddie)                              # Remove the baddie
                     break
+
         # Player collisions
         if not self.star_active:                                # If the immortality star is not active
             for baddie in self.baddies[:]:
@@ -785,11 +789,12 @@ class Player:
     def shoot_bullet(self, bullets):
         bullet_color = Constants.BULLET_COLOR.get(self.selected_character, (255, 0, 0))  # Get the bullet color based on the selected character
         bullet = {
-            'rect': pygame.Rect(self.rect.right, self.rect.centery - Constants.BULLET_SIZE[1] // 2, Constants.BULLET_SIZE[0], Constants.BULLET_SIZE[1]),  # Create the bullet rectangle
-            'speed': Constants.BULLET_SPEED,                        # Set the bullet speed
-            'color': bullet_color                                   # Set the bullet color
+            'pos': [self.rect.right, self.rect.centery],  # Use position instead of rectangle
+            'radius': Constants.BULLET_SIZE[0] // 2,  # Set the radius of the bullet
+            'speed': Constants.BULLET_SPEED,  # Set the bullet speed
+            'color': bullet_color  # Set the bullet color
         }
-        bullets.append(bullet)                                      # Add the bullet to the bullets list
+        bullets.append(bullet)  # Add the bullet to the bullets list
 
     def update_image(self, index):
         self.image = self.images[index]                             # Update the player image
