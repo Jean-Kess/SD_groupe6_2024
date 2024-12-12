@@ -1,5 +1,11 @@
-#Welcome to our game Cosmic Run!
-#Group 6
+#  __          __  _                            _           _____                    _        _____             
+#  \ \        / / | |                          | |         / ____|                  (_)      |  __ \            
+#   \ \  /\  / /__| | ___ ___  _ __ ___   ___  | |_ ___   | |     ___  ___ _ __ ___  _  ___  | |__) |   _ _ __  
+#    \ \/  \/ / _ \ |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \  | |    / _ \/ __| '_ ` _ \| |/ __| |  _  / | | | '_ \ 
+#     \  /\  /  __/ | (_| (_) | | | | | |  __/ | || (_) | | |___| (_) \__ \ | | | | | | (__  | | \ \ |_| | | | |
+#      \/  \/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/   \_____\___/|___/_| |_| |_|_|\___| |_|  \_\__,_|_| |_|
+                                                                                                              
+                                                                                                              
 
 # Imports
 import pygame                                                 # Import the Pygame library
@@ -136,7 +142,7 @@ pygame.init()                                                                   
 pygame.mixer.init()                                                                                                            # Initialize the mixer module
 mainClock = pygame.time.Clock()                                                                                                # Create a clock object to control the frame rate
 windowSurface = pygame.display.set_mode((Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT))                                       # Set the window size
-pygame.display.set_caption('OurGame')                                                                                          # Set the window caption
+pygame.display.set_caption('Cosmic Run')                                                                                          # Set the window caption
 
 
 
@@ -720,7 +726,7 @@ class Game:
             if is_destroyed:                                                                      # If the baddie is destroyed
                 self.nb_baddies_destroyed += 1                                                    # Increment the number of baddies destroyed
                 Sounds.baddie_shoot_sound.play()                                                  # Play the baddie shoot sound
-                if self.nb_baddies_destroyed == 30:                                               # If 30 baddies are destroyed
+                if self.nb_baddies_destroyed %30 == 0:                                            # Every 30 baddies destroyed
                     self.lives += 1                                                               # Add a life when 30 baddies are destroyed
 
     def show_game_over_screen(self):        
@@ -788,7 +794,7 @@ class Player:
         self.moveDown = False                                        # Initialize the move down flag
         self.mask = pygame.mask.from_surface(self.image)             # Create a mask for pixel-perfect collision detection
         self.last_shot_time = 0                                      # Track the last time the player shot
-        self.shoot_cooldown = 350                                    # Cooldown period in milliseconds for shooting
+        self.shoot_cooldown = 350                                    # Cooldown period in milliseconds for shooting (you can shoot every 350 milliseconds)
 
     def update_position(self):
         if self.moveUp and self.rect.top > 0:   
@@ -897,3 +903,12 @@ class Spaceship(Baddie):
 if __name__ == '__main__':  # If the script is run directly
     game = Game()           # Create a new game instance
     game.run()              # Run the game
+
+# _    _       _                        _____        __ _                                _           _                         _____                            __  
+#| |  | |     (_)                      / ____|      / _| |                              | |         (_)                       / ____|                          / /  
+#| |  | |_ __  _ _ __   ___   ______  | (___   ___ | |_| |___      ____ _ _ __ ___    __| | ___  ___ _  __ _ _ __    ______  | |  __ _ __ ___  _   _ _ __     / /_  
+#| |  | | '_ \| | '_ \ / _ \ |______|  \___ \ / _ \|  _| __\ \ /\ / / _` | '__/ _ \  / _` |/ _ \/ __| |/ _` | '_ \  |______| | | |_ | '__/ _ \| | | | '_ \   | '_ \ 
+#| |__| | | | | | | | |  __/           ____) | (_) | | | |_ \ V  V / (_| | | |  __/ | (_| |  __/\__ \ | (_| | | | |          | |__| | | | (_) | |_| | |_) |  | (_) |
+# \____/|_| |_|_|_| |_|\___|          |_____/ \___/|_|  \__| \_/\_/ \__,_|_|  \___|  \__,_|\___||___/_|\__, |_| |_|           \_____|_|  \___/ \__,_| .__/    \___/ 
+#                                                                                                       __/ |                                       | |                 
+#                                                                                                      |___/                                        |_|    
