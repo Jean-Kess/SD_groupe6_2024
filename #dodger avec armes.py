@@ -466,6 +466,8 @@ class Game:
                            Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 200, center=True)             # Center the text
         GameUtils.drawTextWhite('Press R to see rules', Fonts.small_font, self.windowSurface,                        # Draw the prompt to see the rules
                            Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 400, center=True)             # Center the text
+        GameUtils.drawTextWhite('Press Esc to quit the game', Fonts.small_font, self.windowSurface,                  # Draw the prompt to quit the game
+                           Constants.WINDOWWIDTH // 2, (Constants.WINDOWHEIGHT // 3) + 450, center=True)             # Center the text
         pygame.display.update()                                  # Update the display
         GameUtils.waitForPlayerToPressKey(self)                  # Wait for the player to press a key
 
