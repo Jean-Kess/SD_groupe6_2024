@@ -27,6 +27,7 @@ class Constants:
     # Game settings
     MAX_NAME_LENGTH = 15                                      # Set the maximum name length
     FPS_INITIAL = 30                                          # Set the initial frames per second
+    CHARACTER_SIZE = (70, 90)                                 # Set the character size
     SPACE_MIN_SIZE = 150                                      # Set the minimum size for the spaceship
     SPACE_MAX_SIZE = 250                                      # Set the maximum size for the spaceship
     BADDIE_MIN_SIZE = 15                                      # Set the minimum size for the baddies
@@ -46,9 +47,6 @@ class Constants:
         3: (255, 214, 52)                                     # Yellow for the fourth character (index 3)
 
     }
-
-    # Character settings
-    CHARACTER_SIZE = (70, 90)                                 # Set the character size
 
 # Fonts class
 class Fonts:
@@ -77,7 +75,7 @@ class Sounds:
     immortality_music = None
     baddie_hit_sound = None
     baddie_shoot_sound = None
-    shoot_sound = None  # Add a new attribute for the shoot sound
+    shoot_sound = None  
 
     @classmethod
     def load_assets(cls):
@@ -239,11 +237,11 @@ class GameUtils:
         surface.blit(textobj, textrect)                                                     # Blit the text on the surface
 
     @staticmethod
-    def drawTextWhite(text, font, surface, x, y, center=False):
-        GameUtils.drawText(text, font, surface, x, y, center=center, color=Constants.WHITE)
+    def drawTextWhite(text, font, surface, x, y, center=False):                             # Function to draw white text on the screen
+        GameUtils.drawText(text, font, surface, x, y, center=center, color=Constants.WHITE) # Call the drawText function with the white color
 
     @staticmethod
-    def draw_hearts(lives, font, surface, x, y):
+    def draw_hearts(lives, font, surface, x, y):                       # Function to draw the hearts
         text = "Lives: "
         textobj = font.render(text, True, Constants.WHITE)
         textrect = textobj.get_rect()
@@ -255,7 +253,7 @@ class GameUtils:
             surface.blit(Images.heart_image, (x + textrect.width + (i * heart_spacing), y + heart_y_offset))     # Draw a heart for each life
 
     @staticmethod
-    def display_rules(windowSurface):
+    def display_rules(windowSurface):                                # Function to display the rules
         pygame.mixer.music.stop()                                    # Stop the background music
         screen_copy = windowSurface.copy()                           # Create a copy of the window surface
         screen_copy.blit(Images.rules_image, (0, 0))                 # Blit the rules image on the copy
@@ -323,8 +321,8 @@ class CharacterSelection:
                     choose_button_rect = pygame.Rect(
                         selected_img_rect.centerx - 75, selected_img_rect.bottom + 10, 150, 50
                     )  # Adjust the positions to be just below the selected image
-                    choose_button_color = Constants.BULLET_COLOR.get(selected_character, Constants.BLACK)                                                                          # Get the color associated with the selected character (Black if not found)
-                    pygame.draw.rect(windowSurface, choose_button_color, choose_button_rect)                                                                                      # Draw the choose button with the selected color
+                    choose_button_color = Constants.BULLET_COLOR.get(selected_character, Constants.BLACK)                                                                        # Get the color associated with the selected character (Black if not found)
+                    pygame.draw.rect(windowSurface, choose_button_color, choose_button_rect)                                                                                     # Draw the choose button with the selected color
                     GameUtils.drawText("Choose", Fonts.small_font, windowSurface, choose_button_rect.centerx, choose_button_rect.centery, center=True, color=Constants.WHITE)    # Draw the text on the choose button
 
             for event in pygame.event.get():
@@ -476,7 +474,7 @@ class Game:
             self.windowSurface, Fonts.font, Fonts.large_font, self.character_images, Constants.WHITE, Constants.BLACK, Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT
         )   
         self.selected_character_images = selected_character_images
-        self.player = Player(self.selected_character_images, selected_character)                                           # Create the player object
+        self.player = Player(self.selected_character_images, selected_character)                                      # Create the player object
         Countdown.display_the_countdown(self.windowSurface, Fonts.large_font, self.player.image, player_name, Constants.WHITE, Constants.WINDOWWIDTH, Constants.WINDOWHEIGHT)   # Display the countdown
 
     def game_loop(self):
@@ -503,20 +501,14 @@ class Game:
 
     def handle_events(self):
         for event in pygame.event.get():
-            if event.type == QUIT:
-                self.terminate_game()       
-            elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    self.terminate_game()
-                if event.key == K_p:
+            if event.type == QUIT:                             # If the event type is QUIT
+                self.terminate_game()                          # Terminate the game
+            elif event.type == KEYDOWN:                        # If the event type is KEYDOWN (if a key is pressed)
+                if event.key == K_ESCAPE:                      # If the key pressed is ESCAPE
+                    self.terminate_game()                      # Terminate the game
+                if event.key == K_p:                           # If the key pressed is P
                     self.paused = not self.paused
-                if not self.paused:
-                    if event.key in (K_LEFT, K_a):             # If the left arrow key is pressed
-                        self.player.moveLeft = True            # Move the player left
-                        self.player.moveRight = False
-                    if event.key in (K_RIGHT, K_d):            # If the right arrow key is pressed
-                        self.player.moveRight = True           # Move the player right
-                        self.player.moveLeft = False
+                if not self.paused: 
                     if event.key in (K_UP, K_w):               # If the up arrow key is pressed
                         self.player.moveUp = True              # Move the player up
                         self.player.moveDown = False    
@@ -532,17 +524,13 @@ class Game:
                     if self.is_playing:                        # Restart the background music only if the game is running
                         pygame.mixer.music.play()
 
-            elif event.type == KEYUP:
-                if event.key in (K_LEFT, K_a):
-                    self.player.moveLeft = False                # Stop moving the player left
-                if event.key in (K_RIGHT, K_d):
-                    self.player.moveRight = False               # Stop moving the player right
+            elif event.type == KEYUP:                          # If the event type is KEYUP (if a key is released)
                 if event.key in (K_UP, K_w):
-                    self.player.moveUp = False                  # Stop moving the player up
+                    self.player.moveUp = False                 # Stop moving the player up
                 if event.key in (K_DOWN, K_s):
-                    self.player.moveDown = False                # Stop moving the player down
+                    self.player.moveDown = False               # Stop moving the player down
             elif event.type == MOUSEMOTION:     
-                self.player.rect.centery = event.pos[1]         # Move the player with the mouse
+                self.player.rect.centery = event.pos[1]        # Move the player with the mouse
 
     def show_paused_screen(self):
         self.windowSurface.blit(Images.paused_image, (0, 0))     # Blit the paused image on the window
@@ -670,10 +658,10 @@ class Game:
                 distance = math.hypot(bullet['pos'][0] - baddie.rect.centerx, bullet['pos'][1] - baddie.rect.centery)
                 # Check if the distance is less than the sum of the radii (collision detection)
                 if distance < bullet['radius'] + baddie.rect.width // 2:
-                    baddie.health -= 1                                                            # Decrement the baddie's health
-                    self.bullets.remove(bullet)                                                   # Remove the bullet
-                    if baddie.health <= 0:                                                        # If the baddie's health is less than or equal to 0
-                        self.remove_baddie(baddie)                                                # Remove the baddie
+                    baddie.health -= 1                                                             # Decrement the baddie's health
+                    self.bullets.remove(bullet)                                                    # Remove the bullet
+                    if baddie.health <= 0:                                                         # If the baddie's health is less than or equal to 0
+                        self.remove_baddie(baddie)                                                 # Remove the baddie
                     break
 
         # Player collisions
@@ -715,7 +703,7 @@ class Game:
 
     def play_explosion(self):
         for img in self.explosion_frames:                                                          # For each explosion frame
-            frame_surface = pygame.transform.scale(img, (int(self.explosion_size), int(self.explosion_size)))       # Scale the explosion frame
+            frame_surface = pygame.transform.scale(img, (int(self.explosion_size), int(self.explosion_size))) # Scale the explosion frame
             frame_rect = frame_surface.get_rect(center=(self.explosion_x, self.explosion_y))       # Set the explosion frame position
             self.windowSurface.blit(frame_surface, frame_rect)                                     # Blit the explosion frame
             pygame.display.update()                                                                # Update the display
@@ -723,23 +711,23 @@ class Game:
         self.playing_explosion = False                                                             # Set the playing explosion state to False
 
     def remove_baddie(self, baddie, is_destroyed=True):     
-        if baddie in self.baddies:                                                                # If the baddie is in the baddies list
-            self.baddies.remove(baddie)                                                           # Remove the baddie
-            if is_destroyed:                                                                      # If the baddie is destroyed
-                self.nb_baddies_destroyed += 1                                                    # Increment the number of baddies destroyed
-                Sounds.baddie_shoot_sound.play()                                                  # Play the baddie shoot sound
-                if self.nb_baddies_destroyed %30 == 0:                                            # Every 30 baddies destroyed
-                    self.lives += 1                                                               # Add a life when 30 baddies are destroyed
+        if baddie in self.baddies:                                                                 # If the baddie is in the baddies list
+            self.baddies.remove(baddie)                                                            # Remove the baddie
+            if is_destroyed:                                                                       # If the baddie is destroyed
+                self.nb_baddies_destroyed += 1                                                     # Increment the number of baddies destroyed
+                Sounds.baddie_shoot_sound.play()                                                   # Play the baddie shoot sound
+                if self.nb_baddies_destroyed %30 == 0:                                             # Every 30 baddies destroyed
+                    self.lives += 1                                                                # Add a life when 30 baddies are destroyed
 
     def show_game_over_screen(self):        
-        pygame.mixer.music.stop()                                                                 # Stop the background music
-        pygame.time.wait(2000)                                                                    # Wait for 1 second before playing the game over sound
-        Sounds.game_over_sound.play()                                                             # Play the game over sound
+        pygame.mixer.music.stop()                                                                  # Stop the background music
+        pygame.time.wait(2000)                                                                     # Wait for 1 second before playing the game over sound
+        Sounds.game_over_sound.play()                                                              # Play the game over sound
 
         # Load and display the explosion image
-        explosion_image = pygame.image.load("explosion08.png")                                   # Load the explosion image                  
-        original_width, original_height = explosion_image.get_size()                             # Get the original width and height 
-        scaled_width, scaled_height = original_width * 2, original_height * 2                    # Scale the width and height
+        explosion_image = pygame.image.load("explosion08.png")                                     # Load the explosion image                  
+        original_width, original_height = explosion_image.get_size()                               # Get the original width and height 
+        scaled_width, scaled_height = original_width * 2, original_height * 2                      # Scale the width and height
         explosion_image = pygame.transform.scale(explosion_image, (scaled_width, scaled_height))    
         image_rect = explosion_image.get_rect(center=(Constants.WINDOWWIDTH // 2, Constants.WINDOWHEIGHT // 2))
         self.windowSurface.blit(explosion_image, image_rect.topleft)
@@ -756,7 +744,7 @@ class Game:
         pygame.time.wait(2000)                                                                # Wait for 2 seconds
         
         # Check if the player has beaten the top score
-        print(f"Score: {self.score}, Top Score: {self.topScore}")  # Debug
+        print(f"Score: {self.score}, Top Score: {self.topScore}")                             # Debugging statement
         if self.score > self.topScore:                                                        # If the score is greater than the top score
             self.topScore = self.score                                                        # Set the top score to the score
             congrats_y = (Constants.WINDOWHEIGHT / 3) + 250                                   # Set the y position for the congratulations text
@@ -800,9 +788,9 @@ class Player:
 
     def update_position(self):
         if self.moveUp and self.rect.top > 0:   
-            self.rect.move_ip(0, -1 * Constants.PLAYER_MOVE_RATE)     # Move the player up
+            self.rect.move_ip(0, -1 * Constants.PLAYER_MOVE_RATE)                            # Move the player up
         if self.moveDown and self.rect.bottom < Constants.WINDOWHEIGHT:
-            self.rect.move_ip(0, Constants.PLAYER_MOVE_RATE)          # Move the player down
+            self.rect.move_ip(0, Constants.PLAYER_MOVE_RATE)                                 # Move the player down
 
     def shoot_bullet(self, bullets):
         current_time = pygame.time.get_ticks()                                               # Get the current time
